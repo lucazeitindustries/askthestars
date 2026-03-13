@@ -752,10 +752,10 @@ export default function QuizPage() {
               animate="center"
               exit="exit"
               transition={slideTransition}
-              className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
+              className="flex flex-col items-center py-8 min-h-[calc(100dvh-100px)] overflow-y-auto"
             >
               {showBackButton && (
-                <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
+                <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer z-10">
                   <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
                   </svg>
@@ -816,6 +816,7 @@ export default function QuizPage() {
                 >
                   Unlock Your Full Reading
                 </button>
+                <div className="h-12" />
               </div>
             </motion.div>
           )}
@@ -861,6 +862,8 @@ export default function QuizPage() {
               <div className="w-full space-y-4">
                 <input
                   type="email"
+                  inputMode="email"
+                  autoComplete="email"
                   value={state.email}
                   onChange={(e) => setState((s) => ({ ...s, email: e.target.value, error: '' }))}
                   placeholder="your@email.com"
