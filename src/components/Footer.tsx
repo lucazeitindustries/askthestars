@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 const zodiacSigns = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -74,6 +77,19 @@ export default function Footer() {
             For entertainment purposes. The stars guide, but you decide.
           </p>
         </div>
+
+        {/* Easter egg: tiny telescope at the very bottom */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.8, duration: 1 }}
+          className="text-center mt-8"
+        >
+          <span className="text-[10px] opacity-30 hover:opacity-60 transition-opacity cursor-default" title="You found the telescope!">
+            🔭
+          </span>
+        </motion.div>
       </div>
     </footer>
   );

@@ -14,12 +14,29 @@ const links = [
 
 export default function Navigation() {
   const [open, setOpen] = useState(false);
+  const [twinkle, setTwinkle] = useState(false);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50">
       <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group">
-          <span className="text-2xl">✦</span>
+        <Link
+          href="/"
+          className="flex items-center gap-2 group"
+          onMouseEnter={() => setTwinkle(true)}
+          onMouseLeave={() => setTwinkle(false)}
+          data-sound="twinkle"
+        >
+          <motion.span
+            className="text-2xl"
+            animate={twinkle ? {
+              scale: [1, 1.3, 0.9, 1.2, 1],
+              opacity: [1, 0.6, 1, 0.8, 1],
+              rotate: [0, 15, -10, 5, 0],
+            } : {}}
+            transition={{ duration: 0.6, ease: 'easeInOut' }}
+          >
+            ✦
+          </motion.span>
           <span className="text-lg font-semibold tracking-tight text-gradient-gold">
             Ask the Stars
           </span>

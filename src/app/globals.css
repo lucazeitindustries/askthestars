@@ -10,6 +10,7 @@
   --white: #ffffff;
   --white-muted: rgba(255, 255, 255, 0.7);
   --white-dim: rgba(255, 255, 255, 0.4);
+  --max-content: 640px;
 }
 
 @theme inline {
@@ -37,7 +38,40 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Subtle depth — not flat black */
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(18, 18, 62, 0.8) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(26, 26, 78, 0.6) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 100%, rgba(15, 15, 50, 0.5) 0%, transparent 50%);
+  background-attachment: fixed;
 }
+
+/* Typography — clamp() for responsive sizing */
+.text-hero {
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  font-weight: 300;
+}
+
+.text-section {
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  font-weight: 300;
+}
+
+.text-body {
+  font-size: clamp(0.9375rem, 1.5vw, 1.0625rem);
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+/* Opacity hierarchy for text */
+.text-primary { color: rgba(255, 255, 255, 0.9); }
+.text-secondary { color: rgba(255, 255, 255, 0.7); }
+.text-tertiary { color: rgba(255, 255, 255, 0.5); }
+.text-hint { color: rgba(255, 255, 255, 0.3); }
 
 /* Star field animation */
 @keyframes twinkle {
@@ -58,6 +92,28 @@ body {
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+@keyframes shooting-star {
+  0% { transform: translateX(0) translateY(0) rotate(-45deg); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: translateX(300px) translateY(300px) rotate(-45deg); opacity: 0; }
+}
+
+@keyframes cosmic-shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.04; }
+  50% { opacity: 0.08; }
 }
 
 .star {
@@ -106,6 +162,28 @@ body {
   animation: pulse-glow 3s ease-in-out infinite;
 }
 
+/* Breathing animation for zodiac symbols */
+.zodiac-breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+/* Skeleton loading state */
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 200% 100%;
+  animation: cosmic-shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* Shooting star for 404 */
+.shooting-star {
+  position: absolute;
+  width: 100px;
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+  animation: shooting-star 2s ease-in-out infinite;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
@@ -149,4 +227,20 @@ input::placeholder, textarea::placeholder {
 select option {
   background: var(--navy);
   color: white;
+}
+
+/* Zodiac sign hover glow */
+.zodiac-glow {
+  transition: all 0.3s ease;
+}
+.zodiac-glow:hover {
+  text-shadow: 0 0 20px rgba(212, 168, 83, 0.5), 0 0 40px rgba(212, 168, 83, 0.2);
+  transform: scale(1.08);
+}
+
+/* Content container — 640px max */
+.content-narrow {
+  max-width: var(--max-content);
+  margin-left: auto;
+  margin-right: auto;
 }
