@@ -1,6 +1,15 @@
 'use client';
 
-const CDN_BASE = 'https://askthestars-assets.b-cdn.net';
+export const CDN_BASE = 'https://askthestars-assets.b-cdn.net';
+
+/** Convert a local /illustrations/ path to CDN WebP URL */
+export function cdnUrl(src: string): string {
+  if (src.startsWith('/illustrations/')) {
+    const name = src.replace('/illustrations/', '').replace(/\.png$/, '.webp');
+    return `${CDN_BASE}/${name}`;
+  }
+  return src;
+}
 
 interface FloatingIllustrationProps {
   src: string;
@@ -10,6 +19,7 @@ interface FloatingIllustrationProps {
   opacity?: number;
   className?: string;
   blendMode?: 'screen' | 'normal';
+  priority?: boolean;
 }
 
 export default function FloatingIllustration({
@@ -20,11 +30,9 @@ export default function FloatingIllustration({
   opacity = 0.7,
   className = '',
   blendMode = 'normal',
+  priority = false,
 }: FloatingIllustrationProps) {
-  // Convert local path to CDN URL
-  const cdnSrc = src.startsWith('/illustrations/')
-    ? `${CDN_BASE}/${src.replace('/illustrations/', '')}`
-    : src;
+  const resolvedSrc = cdnUrl(src);
 
   return (
     <div
@@ -33,11 +41,13 @@ export default function FloatingIllustration({
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={cdnSrc}
+        src={resolvedSrc}
         alt={alt}
         width={width}
         height={height}
-        loading="lazy"
+        loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : 'auto'}
+        decoding="async"
         style={{ opacity, width: '100%', maxWidth: width, height: 'auto' }}
       />
     </div>

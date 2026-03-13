@@ -3,8 +3,26 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MetaPixel, { trackEvent } from '@/components/MetaPixel';
-import FloatingIllustration from '@/components/FloatingIllustration';
+import FloatingIllustration, { cdnUrl } from '@/components/FloatingIllustration';
 import PaymentForm from '@/components/PaymentForm';
+
+// Preload quiz illustrations on module load
+const PRELOAD_IMAGES = [
+  '/illustrations/hero-eclipse.png',
+  '/illustrations/moon-phases.png',
+  '/illustrations/stella-chat-illustration.png',
+].map(cdnUrl);
+
+if (typeof window !== 'undefined') {
+  PRELOAD_IMAGES.forEach((src) => {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = src;
+    link.type = 'image/webp';
+    document.head.appendChild(link);
+  });
+}
 
 type FocusArea = 'love' | 'career' | 'growth';
 
@@ -390,6 +408,7 @@ export default function QuizPage() {
                   width={140}
                   height={140}
                   opacity={0.6}
+                  priority
                   className="mb-8"
                 />
                 <h1 className="text-[clamp(2rem,6vw,2.75rem)] font-heading font-light leading-[1.15] mb-6 text-white/90">

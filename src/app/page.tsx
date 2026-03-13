@@ -91,6 +91,7 @@ export default function Home() {
             width={300}
             height={300}
             opacity={0.7}
+            priority
             blendMode="screen"
             className="mb-8"
           />
