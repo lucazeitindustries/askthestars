@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import FloatingIllustration from '@/components/FloatingIllustration';
 
 interface Message {
   id: string;
@@ -170,6 +171,14 @@ export default function ChatPage() {
         transition={{ duration: 0.6 }}
         className="text-center py-4"
       >
+        <FloatingIllustration
+          src="/illustrations/stella-chat-illustration.png"
+          alt="Stella the AI astrologer"
+          width={150}
+          height={150}
+          opacity={0.7}
+          className="mb-3"
+        />
         <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">Stella</p>
       </motion.div>
 

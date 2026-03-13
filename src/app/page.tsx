@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ScrollReveal from '@/components/ScrollReveal';
+import FloatingIllustration from '@/components/FloatingIllustration';
 
 const zodiacSigns = [
   { name: 'Aries', symbol: '♈', slug: 'aries' },
@@ -84,6 +85,16 @@ export default function Home() {
           transition={{ duration: 1.5, ease: 'easeOut' }}
           className="relative z-10 content-narrow"
         >
+          <FloatingIllustration
+            src="/illustrations/hero-eclipse.png"
+            alt="Celestial eclipse illustration"
+            width={300}
+            height={300}
+            opacity={0.7}
+            blendMode="screen"
+            className="mb-8"
+          />
+
           <motion.h1
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -220,6 +231,18 @@ export default function Home() {
           </AnimatePresence>
         </div>
       </section>
+
+      {/* Moon phases divider */}
+      <div className="relative px-6 py-8 flex justify-center">
+        <FloatingIllustration
+          src="/illustrations/moon-phases.png"
+          alt="Moon phases divider"
+          width={800}
+          height={100}
+          opacity={0.45}
+          className="w-full max-w-3xl"
+        />
+      </div>
 
       {/* Features — text only, no cards */}
       <section className="relative px-6 py-32 md:py-40">

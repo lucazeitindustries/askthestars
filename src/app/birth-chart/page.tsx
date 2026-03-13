@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import FloatingIllustration from '@/components/FloatingIllustration';
 
 interface PlanetPosition {
   planet: string;
@@ -117,6 +118,14 @@ export default function BirthChartPage() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
+          <FloatingIllustration
+            src="/illustrations/birth-chart-illustration.png"
+            alt="Birth chart celestial illustration"
+            width={200}
+            height={200}
+            opacity={0.6}
+            className="mb-6"
+          />
           <h1 className="text-section mb-4 text-white/90">
             Your cosmic blueprint
           </h1>

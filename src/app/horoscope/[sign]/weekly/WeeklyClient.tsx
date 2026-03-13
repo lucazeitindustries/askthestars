@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import type { ZodiacSign } from '@/lib/zodiac';
 import ScrollReveal from '@/components/ScrollReveal';
 
@@ -44,7 +45,20 @@ export default function WeeklyClient({ sign, prev, next }: Props) {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <span className="text-5xl md:text-6xl block mb-6 opacity-60">{sign.symbol}</span>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+            className="flex justify-center mb-6"
+          >
+            <Image
+              src={`/illustrations/zodiac-${sign.slug}.png`}
+              alt={`${sign.name} zodiac illustration`}
+              width={180}
+              height={180}
+              style={{ opacity: 0.7, width: '100%', maxWidth: 180, height: 'auto' }}
+            />
+          </motion.div>
           <h1 className="text-section mb-3 text-white/90">
             {sign.name}
           </h1>

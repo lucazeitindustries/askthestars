@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import type { ZodiacSign } from '@/lib/zodiac';
 import ScrollReveal from '@/components/ScrollReveal';
 
@@ -63,14 +64,20 @@ export default function HoroscopeClient({ sign, reading, prev, next, today }: Pr
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <motion.span
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="text-5xl md:text-6xl block mb-6 opacity-60"
+            transition={{ duration: 1, ease: 'easeOut' }}
+            className="flex justify-center mb-6"
           >
-            {sign.symbol}
-          </motion.span>
+            <Image
+              src={`/illustrations/zodiac-${sign.slug}.png`}
+              alt={`${sign.name} zodiac illustration`}
+              width={180}
+              height={180}
+              style={{ opacity: 0.7, width: '100%', maxWidth: 180, height: 'auto' }}
+            />
+          </motion.div>
           <h1 className="text-section mb-3 text-white/90">
             {sign.name}
           </h1>

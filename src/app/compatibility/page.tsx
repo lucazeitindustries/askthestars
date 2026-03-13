@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { zodiacSigns } from '@/lib/zodiac';
 import CountUp from '@/components/CountUp';
 import SparkleEffect from '@/components/SparkleEffect';
+import FloatingIllustration from '@/components/FloatingIllustration';
 
 interface CompatResult {
   score: number;
@@ -116,6 +117,14 @@ export default function CompatibilityPage() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
+          <FloatingIllustration
+            src="/illustrations/compatibility-illustration.png"
+            alt="Compatibility zodiac illustration"
+            width={200}
+            height={200}
+            opacity={0.7}
+            className="mb-6"
+          />
           <h1 className="text-section mb-4 text-white/90">
             Compatibility
           </h1>

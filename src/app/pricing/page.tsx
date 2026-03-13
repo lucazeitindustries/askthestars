@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import FloatingIllustration from '@/components/FloatingIllustration';
 
 const plans = [
   {
@@ -92,6 +93,18 @@ export default function PricingPage() {
             Start free, upgrade when you&apos;re ready. Cancel anytime.
           </p>
         </motion.div>
+
+        {/* Moon phases divider */}
+        <div className="flex justify-center mb-16">
+          <FloatingIllustration
+            src="/illustrations/moon-phases.png"
+            alt="Moon phases divider"
+            width={600}
+            height={80}
+            opacity={0.4}
+            className="w-full max-w-2xl"
+          />
+        </div>
 
         <div className="grid md:grid-cols-3 gap-6">
           {plans.map((plan, i) => (
