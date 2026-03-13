@@ -11,12 +11,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/compatibility`, lastModified: new Date(), changeFrequency: 'monthly' as const, priority: 0.9 },
   ];
 
-  const horoscopePages = zodiacSigns.map((sign) => ({
-    url: `${baseUrl}/horoscope/${sign.slug}`,
-    lastModified: new Date(),
-    changeFrequency: 'daily' as const,
-    priority: 0.9,
-  }));
+  const horoscopePages = zodiacSigns.flatMap((sign) => [
+    {
+      url: `${baseUrl}/horoscope/${sign.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/horoscope/${sign.slug}/weekly`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/horoscope/${sign.slug}/monthly`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    },
+  ]);
 
   // Compatibility combo pages (future)
   const compatPages: MetadataRoute.Sitemap = [];

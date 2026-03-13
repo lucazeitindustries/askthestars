@@ -10,6 +10,14 @@ interface Message {
   timestamp: Date;
 }
 
+interface UserData {
+  email: string;
+  birthDate: string;
+  birthTime?: string;
+  birthPlace?: string;
+  plan: string;
+}
+
 const suggestions = [
   'What does Mercury retrograde mean for me?',
   'Will I find love this year?',
@@ -29,8 +37,21 @@ export default function ChatPage() {
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [user, setUser] = useState<UserData | null>(null);
+  const [checkedAuth, setCheckedAuth] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Check if user is logged in
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.user) setUser(data.user);
+        setCheckedAuth(true);
+      })
+      .catch(() => setCheckedAuth(true));
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -55,6 +76,11 @@ export default function ChatPage() {
     setInput('');
     setIsTyping(true);
 
+    // Track chat message
+    if (typeof window !== 'undefined' && 'mixpanel' in window) {
+      (window as unknown as { mixpanel: { track: (event: string, props?: Record<string, unknown>) => void } }).mixpanel.track('chat_message');
+    }
+
     // Create placeholder for streaming response
     const assistantId = (Date.now() + 1).toString();
     setMessages((prev) => [
@@ -63,10 +89,21 @@ export default function ChatPage() {
     ]);
 
     try {
+      const body: Record<string, unknown> = { message: content };
+
+      // If user is logged in, pass their birth data
+      if (user) {
+        body.birthData = {
+          date: user.birthDate,
+          time: user.birthTime,
+          place: user.birthPlace,
+        };
+      }
+
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: content }),
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) throw new Error('API error');
@@ -82,7 +119,6 @@ export default function ChatPage() {
         if (done) break;
 
         const chunk = decoder.decode(value, { stream: true });
-        // Text stream — plain text chunks
         accumulated += chunk;
 
         setMessages((prev) =>
@@ -90,7 +126,6 @@ export default function ChatPage() {
         );
       }
 
-      // If we got no content from streaming, set a fallback
       if (!accumulated) {
         setMessages((prev) =>
           prev.map((m) =>
@@ -138,6 +173,35 @@ export default function ChatPage() {
         </h1>
         <p className="text-xs text-white-dim mt-1">Your personal AI astrologer</p>
       </motion.div>
+
+      {/* Sign-in prompt if not logged in */}
+      {checkedAuth && !user && (
+        <motion.div
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 p-3 rounded-xl bg-gold/5 border border-gold/10 text-center"
+        >
+          <p className="text-xs text-white-dim">
+            <a href="/birth-chart" className="text-gold hover:text-gold-light transition-colors">
+              Enter your birth details
+            </a>
+            {' '}to get personalized readings from Stella ✦
+          </p>
+        </motion.div>
+      )}
+
+      {/* User badge if logged in */}
+      {user && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mb-4 flex justify-center"
+        >
+          <span className="text-[10px] text-gold/50 bg-gold/5 px-3 py-1 rounded-full border border-gold/10">
+            ✦ Personalized for {user.email}
+          </span>
+        </motion.div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto space-y-4 mb-4 scrollbar-thin">

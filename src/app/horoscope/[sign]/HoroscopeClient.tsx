@@ -80,6 +80,19 @@ export default function HoroscopeClient({ sign, reading, prev, next, today }: Pr
           <p className="text-white-dim text-xs mt-1">{today}</p>
         </motion.div>
 
+        {/* Period tabs */}
+        <div className="flex justify-center gap-4 mt-6 mb-8">
+          <span className="text-xs text-gold px-3 py-1.5 rounded-full border border-gold/20 bg-gold/10">
+            Daily
+          </span>
+          <Link href={`/horoscope/${sign.slug}/weekly`} className="text-xs text-white-dim hover:text-white transition-colors px-3 py-1.5 rounded-full border border-white/10 hover:border-white/20">
+            Weekly
+          </Link>
+          <Link href={`/horoscope/${sign.slug}/monthly`} className="text-xs text-white-dim hover:text-white transition-colors px-3 py-1.5 rounded-full border border-white/10 hover:border-white/20">
+            Monthly
+          </Link>
+        </div>
+
         {/* Sign details */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}

@@ -4,6 +4,8 @@ import './globals.css';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import StarField from '@/components/StarField';
+import Analytics from '@/components/Analytics';
+import { WebSiteSchema, FAQSchema, OrganizationSchema } from '@/components/StructuredData';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -56,6 +58,9 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  alternates: {
+    canonical: 'https://askthestars.ai',
+  },
 };
 
 export default function RootLayout({
@@ -65,7 +70,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
+      <head>
+        <WebSiteSchema />
+        <FAQSchema />
+        <OrganizationSchema />
+      </head>
       <body className="font-[family-name:var(--font-inter)] antialiased min-h-screen">
+        <Analytics />
         <StarField />
         <Navigation />
         <main className="relative z-10">{children}</main>

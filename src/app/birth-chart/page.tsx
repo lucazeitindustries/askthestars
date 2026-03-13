@@ -27,6 +27,9 @@ export default function BirthChartPage() {
   });
   const [chart, setChart] = useState<ChartResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +54,37 @@ export default function BirthChartPage() {
       console.error('Birth chart error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveReading = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setSaving(true);
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          birthDate: formData.birthDate,
+          birthTime: formData.knowsTime ? formData.birthTime : undefined,
+          birthPlace: formData.birthPlace || undefined,
+        }),
+      });
+
+      if (res.ok) {
+        setSaved(true);
+        // Track signup event
+        if (typeof window !== 'undefined' && 'mixpanel' in window) {
+          (window as unknown as { mixpanel: { track: (event: string, props?: Record<string, unknown>) => void } }).mixpanel.track('signup', { source: 'birth_chart' });
+        }
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -240,6 +274,48 @@ export default function BirthChartPage() {
               {/* Note */}
               {chart.note && (
                 <p className="text-center text-[11px] text-white-dim/60 px-4">{chart.note}</p>
+              )}
+
+              {/* Save Reading Prompt */}
+              {!saved ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="glass-card p-8 border border-gold/10"
+                >
+                  <h3 className="text-xs uppercase tracking-[0.2em] text-gold/60 mb-2 text-center">
+                    Save Your Reading
+                  </h3>
+                  <p className="text-sm text-white-dim text-center mb-6">
+                    Enter your email to save your birth chart and get personalized daily readings.
+                  </p>
+                  <form onSubmit={handleSaveReading} className="flex gap-3">
+                    <input
+                      type="email"
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="flex-1"
+                    />
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className="px-6 py-3 bg-gold text-navy font-medium rounded-full text-sm hover:bg-gold-light disabled:opacity-50 transition-all duration-300 shrink-0"
+                    >
+                      {saving ? 'Saving...' : 'Save ✦'}
+                    </button>
+                  </form>
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="glass-card p-6 border border-gold/20 text-center"
+                >
+                  <p className="text-gold text-sm">✦ Reading saved! Check back daily for personalized insights.</p>
+                </motion.div>
               )}
 
               {/* CTA to chat */}

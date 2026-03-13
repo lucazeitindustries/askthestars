@@ -18,6 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ sign: str
   return {
     title: `${sign.name} Horoscope Today — ${today}`,
     description: `Free daily ${sign.name} horoscope. ${sign.description} Read your personalized AI-powered reading for today.`,
+    alternates: { canonical: `https://askthestars.ai/horoscope/${sign.slug}` },
     openGraph: {
       title: `${sign.name} Daily Horoscope — Ask the Stars`,
       description: `${sign.symbol} Today's ${sign.name} horoscope. AI-powered astrology reading based on current planetary positions.`,
