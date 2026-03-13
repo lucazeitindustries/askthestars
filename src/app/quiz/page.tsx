@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MetaPixel, { trackEvent } from '@/components/MetaPixel';
+import FloatingIllustration from '@/components/FloatingIllustration';
 
 type FocusArea = 'love' | 'career' | 'growth';
 
@@ -271,6 +272,14 @@ export default function QuizPage() {
                 transition={{ delay: 0.1, duration: 0.5 }}
                 className="text-center mb-10"
               >
+                <FloatingIllustration
+                  src="/illustrations/hero-eclipse.png"
+                  alt="Celestial eclipse"
+                  width={120}
+                  height={120}
+                  opacity={0.5}
+                  className="mb-6"
+                />
                 <h1 className="text-[clamp(1.75rem,5vw,2.25rem)] font-heading font-light leading-tight mb-3 text-white/90">
                   What do the stars have in store for you?
                 </h1>
@@ -326,6 +335,14 @@ export default function QuizPage() {
                 transition={{ delay: 0.1, duration: 0.5 }}
                 className="text-center mb-8"
               >
+                <FloatingIllustration
+                  src="/illustrations/moon-phases.png"
+                  alt="Moon phases"
+                  width={240}
+                  height={80}
+                  opacity={0.4}
+                  className="mb-6"
+                />
                 <h1 className="text-[clamp(1.75rem,5vw,2.25rem)] font-heading font-light leading-tight mb-3 text-white/90">
                   When were you born?
                 </h1>
@@ -438,9 +455,14 @@ export default function QuizPage() {
                   className="w-full"
                 >
                   <div className="text-center mb-8">
-                    <div className="text-4xl mb-3 opacity-60">
-                      {getSignEmoji(state.sign)}
-                    </div>
+                    <FloatingIllustration
+                      src={`/illustrations/zodiac-${state.sign.toLowerCase()}.png`}
+                      alt={`${state.sign} zodiac illustration`}
+                      width={140}
+                      height={140}
+                      opacity={0.6}
+                      className="mb-4"
+                    />
                     <h2 className="text-[clamp(1.5rem,4vw,2rem)] font-heading font-light text-white/90">
                       Your stars have spoken
                     </h2>
@@ -508,6 +530,14 @@ export default function QuizPage() {
                 transition={{ delay: 0.1, duration: 0.5 }}
                 className="text-center mb-8"
               >
+                <FloatingIllustration
+                  src="/illustrations/stella-chat-illustration.png"
+                  alt="Cosmic eye"
+                  width={120}
+                  height={120}
+                  opacity={0.5}
+                  className="mb-6"
+                />
                 <h1 className="text-[clamp(1.5rem,4.5vw,2rem)] font-heading font-light leading-tight mb-2 text-white/90">
                   Where should we send your daily readings?
                 </h1>
@@ -572,7 +602,14 @@ export default function QuizPage() {
                 transition={{ delay: 0.1, duration: 0.5 }}
                 className="text-center mb-6"
               >
-                <div className="text-3xl mb-2 opacity-60">{getSignEmoji(state.sign)}</div>
+                <FloatingIllustration
+                  src={`/illustrations/zodiac-${state.sign.toLowerCase()}.png`}
+                  alt={`${state.sign} zodiac illustration`}
+                  width={100}
+                  height={100}
+                  opacity={0.5}
+                  className="mb-3"
+                />
                 <h2 className="text-[clamp(1.25rem,4vw,1.75rem)] font-heading font-light text-white/90">
                   Your {state.sign} Reading
                 </h2>
