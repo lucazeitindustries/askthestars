@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import type { ZodiacSign } from '@/lib/zodiac';
@@ -19,7 +20,35 @@ interface Props {
   today: string;
 }
 
+interface AIReading {
+  reading: string;
+  mood: string;
+  lucky_number: number;
+  color: string;
+  focus_area: string;
+}
+
 export default function HoroscopeClient({ sign, reading, prev, next, today }: Props) {
+  const [aiReading, setAiReading] = useState<AIReading | null>(null);
+
+  useEffect(() => {
+    // Fetch AI-generated horoscope, fall back to static reading
+    fetch(`/api/horoscope/${sign.slug}`)
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.reading) setAiReading(data);
+      })
+      .catch(() => {
+        // Silently fall back to static reading
+      });
+  }, [sign.slug]);
+
+  const displayReading = aiReading?.reading || reading.overall;
+  const displayMood = aiReading?.mood || reading.mood;
+  const displayLucky = aiReading?.lucky_number || reading.luckyNumber;
+  const displayColor = aiReading?.color;
+  const displayFocus = aiReading?.focus_area;
+
   const sections = [
     { title: 'Love & Relationships', icon: '♡', content: reading.love },
     { title: 'Career & Finance', icon: '◇', content: reading.career },
@@ -74,18 +103,34 @@ export default function HoroscopeClient({ sign, reading, prev, next, today }: Pr
         >
           <div className="text-center">
             <p className="text-xs text-white-dim mb-1">Mood</p>
-            <p className="text-sm font-medium text-gold">{reading.mood}</p>
+            <p className="text-sm font-medium text-gold">{displayMood}</p>
           </div>
           <div className="w-px bg-white/10" />
           <div className="text-center">
             <p className="text-xs text-white-dim mb-1">Lucky Number</p>
-            <p className="text-sm font-medium text-gold">{reading.luckyNumber}</p>
+            <p className="text-sm font-medium text-gold">{displayLucky}</p>
           </div>
           <div className="w-px bg-white/10" />
-          <div className="text-center">
-            <p className="text-xs text-white-dim mb-1">Traits</p>
-            <p className="text-sm font-medium text-gold">{sign.traits[0]}</p>
-          </div>
+          {displayColor ? (
+            <div className="text-center">
+              <p className="text-xs text-white-dim mb-1">Color</p>
+              <p className="text-sm font-medium text-gold">{displayColor}</p>
+            </div>
+          ) : (
+            <div className="text-center">
+              <p className="text-xs text-white-dim mb-1">Traits</p>
+              <p className="text-sm font-medium text-gold">{sign.traits[0]}</p>
+            </div>
+          )}
+          {displayFocus && (
+            <>
+              <div className="w-px bg-white/10" />
+              <div className="text-center">
+                <p className="text-xs text-white-dim mb-1">Focus</p>
+                <p className="text-sm font-medium text-gold capitalize">{displayFocus}</p>
+              </div>
+            </>
+          )}
         </motion.div>
 
         {/* Overall reading */}
@@ -96,9 +141,10 @@ export default function HoroscopeClient({ sign, reading, prev, next, today }: Pr
           className="glass-card p-8 md:p-10 mb-6"
         >
           <h2 className="text-xs uppercase tracking-[0.2em] text-gold/60 mb-4">Today&apos;s Reading</h2>
-          <p className="text-white-muted leading-relaxed font-light text-[15px]">
-            {reading.overall}
-          </p>
+          <p className="text-white-muted leading-relaxed font-light text-[15px]">{displayReading}</p>
+          {aiReading && (
+            <p className="text-[10px] text-gold/30 mt-4">✦ AI-generated based on today&apos;s planetary transits</p>
+          )}
         </motion.div>
 
         {/* Section readings */}
@@ -115,9 +161,7 @@ export default function HoroscopeClient({ sign, reading, prev, next, today }: Pr
                 <span className="text-gold/60 text-lg">{section.icon}</span>
                 <h3 className="text-sm font-medium">{section.title}</h3>
               </div>
-              <p className="text-white-muted text-sm leading-relaxed font-light">
-                {section.content}
-              </p>
+              <p className="text-white-muted text-sm leading-relaxed font-light">{section.content}</p>
             </motion.div>
           ))}
         </div>
@@ -152,13 +196,17 @@ export default function HoroscopeClient({ sign, reading, prev, next, today }: Pr
             className="flex items-center gap-2 text-sm text-white-muted hover:text-white transition-colors"
           >
             <span>←</span>
-            <span>{prev.symbol} {prev.name}</span>
+            <span>
+              {prev.symbol} {prev.name}
+            </span>
           </Link>
           <Link
             href={`/horoscope/${next.slug}`}
             className="flex items-center gap-2 text-sm text-white-muted hover:text-white transition-colors"
           >
-            <span>{next.name} {next.symbol}</span>
+            <span>
+              {next.name} {next.symbol}
+            </span>
             <span>→</span>
           </Link>
         </motion.div>

@@ -9,6 +9,7 @@ const links = [
   { href: '/birth-chart', label: 'Birth Chart' },
   { href: '/compatibility', label: 'Compatibility' },
   { href: '/chat', label: 'Ask the Stars' },
+  { href: '/pricing', label: 'Pricing' },
 ];
 
 export default function Navigation() {

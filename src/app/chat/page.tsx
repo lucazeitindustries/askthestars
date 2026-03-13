@@ -22,7 +22,8 @@ export default function ChatPage() {
     {
       id: '1',
       role: 'assistant',
-      content: 'Welcome, seeker. I am your celestial guide — an astrologer woven from starlight and ancient wisdom. The planets have been expecting you.\n\nTell me — what weighs on your mind? Or if you\'d like a personalized reading, share your birth date, time, and place.',
+      content:
+        "Welcome, seeker. I am Stella — your celestial guide, woven from starlight and ancient wisdom. The planets have been expecting you.\n\nTell me — what weighs on your mind? Or if you'd like a personalized reading, share your birth date, time, and place.",
       timestamp: new Date(),
     },
   ]);
@@ -39,9 +40,9 @@ export default function ChatPage() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = (text?: string) => {
+  const handleSend = async (text?: string) => {
     const content = text || input.trim();
-    if (!content) return;
+    if (!content || isTyping) return;
 
     const userMsg: Message = {
       id: Date.now().toString(),
@@ -54,17 +55,67 @@ export default function ChatPage() {
     setInput('');
     setIsTyping(true);
 
-    // Simulate AI response (will be replaced with actual API call)
-    setTimeout(() => {
-      const response: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: 'The stars are aligning to answer your question... This is where the AI astrologer\'s wisdom will flow. For now, know that the cosmos is listening.\n\n✦ *This feature is coming soon. The AI astrologer will provide personalized readings based on your birth chart and current planetary transits.*',
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, response]);
+    // Create placeholder for streaming response
+    const assistantId = (Date.now() + 1).toString();
+    setMessages((prev) => [
+      ...prev,
+      { id: assistantId, role: 'assistant', content: '', timestamp: new Date() },
+    ]);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: content }),
+      });
+
+      if (!res.ok) throw new Error('API error');
+
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error('No reader');
+
+      const decoder = new TextDecoder();
+      let accumulated = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        // Text stream — plain text chunks
+        accumulated += chunk;
+
+        setMessages((prev) =>
+          prev.map((m) => (m.id === assistantId ? { ...m, content: accumulated } : m))
+        );
+      }
+
+      // If we got no content from streaming, set a fallback
+      if (!accumulated) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantId
+              ? { ...m, content: 'The stars are momentarily quiet. Please try asking again.' }
+              : m
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Chat error:', error);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantId
+            ? {
+                ...m,
+                content:
+                  'The cosmic connection is temporarily disrupted. Please try again in a moment ✨',
+              }
+            : m
+        )
+      );
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -108,11 +159,9 @@ export default function ChatPage() {
                 }`}
               >
                 {msg.role === 'assistant' && (
-                  <span className="text-gold/60 text-xs block mb-2">✦ Astrologer</span>
+                  <span className="text-gold/60 text-xs block mb-2">✦ Stella</span>
                 )}
-                <p className="text-white-muted whitespace-pre-wrap font-light">
-                  {msg.content}
-                </p>
+                <p className="text-white-muted whitespace-pre-wrap font-light">{msg.content}</p>
               </div>
             </motion.div>
           ))}
@@ -120,28 +169,29 @@ export default function ChatPage() {
 
         {/* Typing indicator */}
         <AnimatePresence>
-          {isTyping && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="flex justify-start"
-            >
-              <div className="glass-card px-5 py-4 rounded-2xl">
-                <span className="text-gold/60 text-xs block mb-2">✦ Astrologer</span>
-                <div className="flex gap-1.5">
-                  {[0, 1, 2].map((i) => (
-                    <motion.span
-                      key={i}
-                      className="w-1.5 h-1.5 bg-gold/40 rounded-full"
-                      animate={{ opacity: [0.3, 1, 0.3] }}
-                      transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
-                    />
-                  ))}
+          {isTyping &&
+            messages[messages.length - 1]?.content === '' && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="flex justify-start"
+              >
+                <div className="glass-card px-5 py-4 rounded-2xl">
+                  <span className="text-gold/60 text-xs block mb-2">✦ Stella</span>
+                  <div className="flex gap-1.5">
+                    {[0, 1, 2].map((i) => (
+                      <motion.span
+                        key={i}
+                        className="w-1.5 h-1.5 bg-gold/40 rounded-full"
+                        animate={{ opacity: [0.3, 1, 0.3] }}
+                        transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
         </AnimatePresence>
 
         <div ref={messagesEndRef} />
@@ -185,7 +235,13 @@ export default function ChatPage() {
           className="p-3 rounded-xl bg-gold/10 text-gold hover:bg-gold/20 disabled:opacity-30 disabled:hover:bg-gold/10 transition-all duration-200 shrink-0"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M14 2L7 9M14 2L10 14L7 9M14 2L2 6L7 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path
+              d="M14 2L7 9M14 2L10 14L7 9M14 2L2 6L7 9"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </button>
       </div>

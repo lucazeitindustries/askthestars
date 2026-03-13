@@ -7,63 +7,61 @@ import { zodiacSigns } from '@/lib/zodiac';
 
 interface CompatResult {
   score: number;
-  summary: string;
-  strengths: string[];
-  challenges: string[];
+  spark: string;
+  friction: string;
+  emotional: string;
+  chemistry: string;
+  longterm: string;
   advice: string;
-}
-
-function getCompatibility(sign1: string, sign2: string): CompatResult {
-  // Placeholder compatibility logic — will be AI-powered later
-  const s1 = zodiacSigns.find((s) => s.slug === sign1);
-  const s2 = zodiacSigns.find((s) => s.slug === sign2);
-  if (!s1 || !s2) return { score: 0, summary: '', strengths: [], challenges: [], advice: '' };
-
-  const sameElement = s1.element === s2.element;
-  const compatElements: Record<string, string[]> = {
-    Fire: ['Air', 'Fire'],
-    Air: ['Fire', 'Air'],
-    Earth: ['Water', 'Earth'],
-    Water: ['Earth', 'Water'],
-  };
-  const elementCompat = compatElements[s1.element]?.includes(s2.element);
-
-  const score = sameElement ? 92 : elementCompat ? 78 : 61;
-
-  return {
-    score,
-    summary: sameElement
-      ? `${s1.name} and ${s2.name} share the ${s1.element} element, creating a natural understanding and shared energy. You intuitively get each other — sometimes almost too well.`
-      : elementCompat
-      ? `${s1.name} (${s1.element}) and ${s2.name} (${s2.element}) form a complementary pairing. Your elements feed each other, creating a dynamic and growth-oriented connection.`
-      : `${s1.name} and ${s2.name} are a study in contrasts. This pairing requires more conscious effort, but the tension creates attraction and the differences offer profound growth opportunities.`,
-    strengths: sameElement
-      ? ['Deep mutual understanding', 'Shared values and pace', 'Natural emotional resonance', 'Easy communication']
-      : elementCompat
-      ? ['Complementary energies', 'Mutual inspiration', 'Balanced dynamic', 'Growth-oriented bond']
-      : ['Magnetic attraction', 'Learning from differences', 'Broadened perspectives', 'Transformative potential'],
-    challenges: sameElement
-      ? ['May lack tension to grow', 'Risk of complacency', 'Blind spots in common']
-      : elementCompat
-      ? ['Different communication styles', 'Pacing mismatches', 'Occasional misunderstandings']
-      : ['Fundamental differences in approach', 'Requires conscious compromise', 'Potential for friction'],
-    advice: sameElement
-      ? 'Lean into your similarities but actively seek growth. The comfort is your strength — don\'t let it become stagnation.'
-      : elementCompat
-      ? 'Celebrate what each of you brings to the table. Your differences are features, not bugs. Meet in the middle on pacing.'
-      : 'Patience and curiosity are your greatest allies. Approach each other as fascinating puzzles rather than problems to solve.',
-  };
 }
 
 export default function CompatibilityPage() {
   const [sign1, setSign1] = useState('');
   const [sign2, setSign2] = useState('');
   const [result, setResult] = useState<CompatResult | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleCheck = (e: React.FormEvent) => {
+  const handleCheck = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (sign1 && sign2) {
-      setResult(getCompatibility(sign1, sign2));
+    if (!sign1 || !sign2) return;
+
+    setLoading(true);
+    setResult(null);
+
+    try {
+      const res = await fetch('/api/compatibility', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sign1, sign2 }),
+      });
+
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+      setResult(data);
+    } catch (error) {
+      console.error('Compatibility error:', error);
+      // Fallback to basic element compatibility
+      const s1 = zodiacSigns.find((s) => s.slug === sign1);
+      const s2 = zodiacSigns.find((s) => s.slug === sign2);
+      if (s1 && s2) {
+        const sameElement = s1.element === s2.element;
+        const compatElements: Record<string, string[]> = {
+          Fire: ['Air', 'Fire'], Air: ['Fire', 'Air'],
+          Earth: ['Water', 'Earth'], Water: ['Earth', 'Water'],
+        };
+        const elementCompat = compatElements[s1.element]?.includes(s2.element);
+        setResult({
+          score: sameElement ? 85 : elementCompat ? 72 : 58,
+          spark: `${s1.name} and ${s2.name} share an intriguing cosmic connection that draws them together naturally.`,
+          friction: 'Every pairing has its growth edges — these challenges can become your greatest strengths together.',
+          emotional: 'Your emotional styles may differ, offering rich opportunities to learn from each other.',
+          chemistry: 'The attraction between these signs has a magnetic quality worth exploring.',
+          longterm: 'With awareness and communication, this pairing has real potential for lasting connection.',
+          advice: 'Focus on understanding rather than changing each other. Your differences are your superpower.',
+        });
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -79,14 +77,13 @@ export default function CompatibilityPage() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <p className="text-xs uppercase tracking-[0.3em] text-gold/60 mb-4">
-            Cosmic Chemistry
-          </p>
+          <p className="text-xs uppercase tracking-[0.3em] text-gold/60 mb-4">Cosmic Chemistry</p>
           <h1 className="text-4xl md:text-5xl font-light tracking-tight mb-4">
             <span className="text-gradient-gold">Compatibility</span>
           </h1>
           <p className="text-white-muted font-light max-w-md mx-auto">
-            Discover the cosmic chemistry between any two signs. Select yours and theirs to reveal what the stars say about your connection.
+            Discover the cosmic chemistry between any two signs. Select yours and theirs to reveal
+            what the stars say about your connection.
           </p>
         </motion.div>
 
@@ -152,10 +149,21 @@ export default function CompatibilityPage() {
 
           <button
             type="submit"
-            disabled={!sign1 || !sign2}
+            disabled={!sign1 || !sign2 || loading}
             className="w-full mt-8 py-4 bg-gold text-navy font-medium rounded-full text-sm tracking-wide hover:bg-gold-light disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 gold-glow"
           >
-            Reveal Your Compatibility ✦
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <motion.span
+                  className="w-4 h-4 border-2 border-navy/30 border-t-navy rounded-full inline-block"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                />
+                Reading the stars...
+              </span>
+            ) : (
+              'Reveal Your Compatibility ✦'
+            )}
           </button>
         </motion.form>
 
@@ -214,43 +222,41 @@ export default function CompatibilityPage() {
                     </motion.span>
                   </div>
                 </div>
-
-                <p className="text-white-muted leading-relaxed font-light text-sm max-w-lg mx-auto">
-                  {result.summary}
-                </p>
               </div>
 
-              {/* Strengths & Challenges */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="glass-card p-6">
-                  <h3 className="text-xs uppercase tracking-widest text-gold/60 mb-4">Strengths</h3>
-                  <ul className="space-y-3">
-                    {result.strengths.map((s) => (
-                      <li key={s} className="flex items-start gap-3 text-sm text-white-muted font-light">
-                        <span className="text-gold/50 mt-0.5 shrink-0">✦</span>
-                        {s}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="glass-card p-6">
-                  <h3 className="text-xs uppercase tracking-widest text-gold/60 mb-4">Challenges</h3>
-                  <ul className="space-y-3">
-                    {result.challenges.map((c) => (
-                      <li key={c} className="flex items-start gap-3 text-sm text-white-muted font-light">
-                        <span className="text-white-dim mt-0.5 shrink-0">◇</span>
-                        {c}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
+              {/* Detailed sections */}
+              {[
+                { title: 'The Spark', icon: '✦', content: result.spark },
+                { title: 'The Friction', icon: '◇', content: result.friction },
+                { title: 'Emotional Connection', icon: '♡', content: result.emotional },
+                { title: 'Chemistry', icon: '⚡', content: result.chemistry },
+                { title: 'Long-term Potential', icon: '∞', content: result.longterm },
+              ].map((section, i) => (
+                <motion.div
+                  key={section.title}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 + i * 0.1, duration: 0.5 }}
+                  className="glass-card p-6 md:p-8"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-gold/60">{section.icon}</span>
+                    <h3 className="text-sm font-medium">{section.title}</h3>
+                  </div>
+                  <p className="text-white-muted text-sm leading-relaxed font-light">{section.content}</p>
+                </motion.div>
+              ))}
 
               {/* Advice */}
-              <div className="glass-card p-8">
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9, duration: 0.5 }}
+                className="glass-card p-8 border border-gold/10"
+              >
                 <h3 className="text-xs uppercase tracking-widest text-gold/60 mb-4">Cosmic Advice</h3>
                 <p className="text-white-muted text-sm leading-relaxed font-light">{result.advice}</p>
-              </div>
+              </motion.div>
 
               {/* Share & CTA */}
               <div className="text-center space-y-4 pt-4">
