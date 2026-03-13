@@ -35,7 +35,7 @@ html {
 body {
   background: var(--navy);
   color: var(--white);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   /* Subtle depth — not flat black */
@@ -46,12 +46,18 @@ body {
   background-attachment: fixed;
 }
 
+/* Heading font — LoveFromSJA (serif) for headings, Inter (sans) for body */
+.font-heading {
+  font-family: var(--font-heading), Georgia, serif;
+}
+
 /* Typography — clamp() for responsive sizing */
 .text-hero {
   font-size: clamp(2.5rem, 6vw, 5rem);
   line-height: 0.95;
   letter-spacing: -0.02em;
   font-weight: 300;
+  font-family: var(--font-heading), Georgia, serif;
 }
 
 .text-section {
@@ -59,6 +65,7 @@ body {
   line-height: 1.1;
   letter-spacing: -0.015em;
   font-weight: 300;
+  font-family: var(--font-heading), Georgia, serif;
 }
 
 .text-body {

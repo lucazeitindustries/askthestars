@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
@@ -10,6 +11,13 @@ import { WebSiteSchema, FAQSchema, OrganizationSchema } from '@/components/Struc
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+});
+
+const loveFromSJA = localFont({
+  src: '../../public/fonts/LoveFromSJA.woff2',
+  variable: '--font-heading',
+  display: 'swap',
+  weight: '400 700',
 });
 
 export const metadata: Metadata = {
@@ -69,7 +77,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${inter.variable} ${loveFromSJA.variable}`}>
       <head>
         <WebSiteSchema />
         <FAQSchema />
