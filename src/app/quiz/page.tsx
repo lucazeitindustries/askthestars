@@ -411,8 +411,15 @@ export default function QuizPage() {
     <div className="min-h-dvh flex flex-col items-center bg-black overflow-hidden">
       <MetaPixel />
 
-      {/* Logo */}
-      <div className="pt-4 pb-2 text-center z-10">
+      {/* Header — back button + logo */}
+      <div className="pt-4 pb-2 w-full max-w-[480px] px-5 flex items-center justify-center relative z-10">
+        {showBackButton && (
+          <button onClick={goBack} className="absolute left-5 text-white/30 hover:text-white/60 p-1 transition-colors cursor-pointer">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+        )}
         <span className="text-white/30 text-[10px] tracking-[0.2em] uppercase font-heading">askthestars.ai</span>
       </div>
 
@@ -498,13 +505,6 @@ export default function QuizPage() {
               transition={slideTransition}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
-              {showBackButton && (
-                <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
-                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-              )}
 
               <div className="text-center">
                 <FloatingIllustration
@@ -557,13 +557,6 @@ export default function QuizPage() {
               transition={slideTransition}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
-              {showBackButton && (
-                <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
-                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-              )}
 
               <div className="text-center">
                 <FloatingIllustration
@@ -603,13 +596,6 @@ export default function QuizPage() {
               transition={slideTransition}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
-              {showBackButton && (
-                <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
-                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-              )}
 
               <div className="text-center mb-10">
                 <FloatingIllustration
@@ -684,13 +670,6 @@ export default function QuizPage() {
               transition={slideTransition}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
-              {showBackButton && (
-                <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
-                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-              )}
 
               <div className="text-center mb-8">
                 <FloatingIllustration
@@ -887,13 +866,6 @@ export default function QuizPage() {
               transition={slideTransition}
               className="flex flex-col items-center py-8 min-h-[calc(100dvh-100px)] overflow-y-auto"
             >
-              {showBackButton && (
-                <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer z-10">
-                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-              )}
 
               <div className="w-full">
                 <div className="text-center mb-8">
@@ -972,13 +944,6 @@ export default function QuizPage() {
               transition={slideTransition}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
-              {showBackButton && (
-                <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
-                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-              )}
 
               <div className="text-center mb-8">
                 <FloatingIllustration
@@ -1044,13 +1009,6 @@ export default function QuizPage() {
               transition={slideTransition}
               className="flex flex-col items-center py-8 min-h-[calc(100dvh-100px)]"
             >
-              {showBackButton && (
-                <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
-                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-              )}
 
               <div className="text-center mb-6">
                 <FloatingIllustration
@@ -1104,13 +1062,6 @@ export default function QuizPage() {
               transition={slideTransition}
               className="flex flex-col items-center py-8 min-h-[calc(100dvh-100px)] overflow-y-auto"
             >
-              {showBackButton && (
-                <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer z-10">
-                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-              )}
 
               <div className="w-full">
                 {/* Hook headline */}
