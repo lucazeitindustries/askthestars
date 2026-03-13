@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
   try {
-    const { email, birthDate, birthTime, birthPlace } = await req.json();
+    const { email, birthDate, birthTime, birthPlace, utm_source, utm_medium, utm_campaign, utm_content, utm_term } = await req.json();
 
     if (!email || !birthDate) {
       return Response.json(
@@ -24,6 +24,13 @@ export async function POST(req: Request) {
       birthPlace: birthPlace || undefined,
       plan: 'free' as const,
       createdAt: new Date().toISOString(),
+      utm: (utm_source || utm_medium || utm_campaign) ? {
+        source: utm_source,
+        medium: utm_medium,
+        campaign: utm_campaign,
+        content: utm_content,
+        term: utm_term,
+      } : undefined,
     };
 
     const token = await createSession(user);

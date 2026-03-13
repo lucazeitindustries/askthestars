@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const links = [
@@ -15,6 +16,10 @@ const links = [
 export default function Navigation() {
   const [open, setOpen] = useState(false);
   const [twinkle, setTwinkle] = useState(false);
+  const pathname = usePathname();
+
+  // Hide navigation on quiz funnel pages
+  if (pathname?.startsWith('/quiz')) return null;
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50">

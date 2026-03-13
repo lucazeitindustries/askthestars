@@ -6,12 +6,18 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { plan, email } = await req.json();
+    const { plan, email, successUrl } = await req.json();
 
     const planConfig = PLANS[plan as keyof typeof PLANS];
     if (!planConfig || !planConfig.priceId) {
       return Response.json({ error: 'Invalid plan' }, { status: 400 });
     }
+
+    const origin = req.headers.get('origin') || 'https://askthestars.ai';
+    const defaultSuccess = `${origin}/?session_id={CHECKOUT_SESSION_ID}&success=true`;
+    const resolvedSuccess = successUrl
+      ? `${origin}${successUrl}?session_id={CHECKOUT_SESSION_ID}`
+      : defaultSuccess;
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -23,8 +29,8 @@ export async function POST(req: Request) {
         },
       ],
       ...(email ? { customer_email: email } : {}),
-      success_url: `${req.headers.get('origin') || 'https://askthestars.ai'}/?session_id={CHECKOUT_SESSION_ID}&success=true`,
-      cancel_url: `${req.headers.get('origin') || 'https://askthestars.ai'}/?canceled=true`,
+      success_url: resolvedSuccess,
+      cancel_url: `${origin}/?canceled=true`,
       metadata: {
         plan,
       },
