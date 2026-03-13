@@ -35,10 +35,10 @@ const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-const FOCUS_OPTIONS: { key: FocusArea; emoji: string; label: string; sub: string }[] = [
-  { key: 'love', emoji: '🔮', label: 'Love & Relationships', sub: 'Romance, soulmates & connection' },
-  { key: 'career', emoji: '💼', label: 'Career & Money', sub: 'Success, abundance & purpose' },
-  { key: 'growth', emoji: '✨', label: 'Personal Growth', sub: 'Self-discovery & transformation' },
+const FOCUS_OPTIONS: { key: FocusArea; label: string; sub: string }[] = [
+  { key: 'love', label: 'Love & Relationships', sub: 'Romance, soulmates & connection' },
+  { key: 'career', label: 'Career & Money', sub: 'Success, abundance & purpose' },
+  { key: 'growth', label: 'Personal Growth', sub: 'Self-discovery & transformation' },
 ];
 
 const slideVariants = {
@@ -77,7 +77,6 @@ export default function QuizPage() {
     error: '',
   });
 
-  // Capture UTM params on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const utmData: UTMParams = {};
@@ -100,14 +99,12 @@ export default function QuizPage() {
     }
   }, [step]);
 
-  // Step 1: Select focus area
   const handleFocusSelect = (area: FocusArea) => {
     setState((s) => ({ ...s, focusArea: area }));
     trackEvent('ViewContent', { content_name: area });
     goForward(2);
   };
 
-  // Step 2: Submit birth date
   const handleBirthSubmit = async () => {
     const { birthMonth, birthDay, birthYear } = state;
     if (!birthMonth || !birthDay || !birthYear) {
@@ -126,7 +123,6 @@ export default function QuizPage() {
     trackEvent('Lead');
     goForward(3);
 
-    // Call birth chart API to get sun sign
     const dateStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     try {
       const chartRes = await fetch('/api/birth-chart', {
@@ -140,7 +136,6 @@ export default function QuizPage() {
       const chart = await chartRes.json();
       const sign = chart.sun || 'Aries';
 
-      // Now get the reading
       const readingRes = await fetch('/api/quiz/reading', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -172,7 +167,6 @@ export default function QuizPage() {
     }
   };
 
-  // Step 4: Email signup
   const handleEmailSubmit = async () => {
     const { email, birthMonth, birthDay, birthYear, birthTime } = state;
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -207,7 +201,6 @@ export default function QuizPage() {
     }
   };
 
-  // Step 5: Checkout
   const handleCheckout = async (plan: 'star' | 'cosmic') => {
     trackEvent('InitiateCheckout', { content_name: plan, value: plan === 'star' ? 9.99 : 19.99, currency: 'USD' });
     setState((s) => ({ ...s, loading: true }));
@@ -236,12 +229,12 @@ export default function QuizPage() {
   const years = Array.from({ length: 93 }, (_, i) => 2012 - i);
 
   return (
-    <div className="min-h-dvh flex flex-col items-center bg-[var(--navy)] overflow-hidden">
+    <div className="min-h-dvh flex flex-col items-center bg-black overflow-hidden">
       <MetaPixel />
 
       {/* Logo */}
       <div className="pt-4 pb-2 text-center z-10">
-        <span className="text-white-dim text-sm tracking-[0.2em] uppercase">askthestars.ai</span>
+        <span className="text-white/30 text-[10px] tracking-[0.2em] uppercase font-heading">askthestars.ai</span>
       </div>
 
       {/* Progress dots */}
@@ -249,10 +242,10 @@ export default function QuizPage() {
         {[1, 2, 3, 4, 5].map((s) => (
           <div
             key={s}
-            className="h-1.5 rounded-full transition-all duration-500"
+            className="h-1 rounded-full transition-all duration-500"
             style={{
-              width: s === step ? 24 : 8,
-              background: s <= step ? 'var(--gold)' : 'rgba(255,255,255,0.15)',
+              width: s === step ? 20 : 6,
+              background: s <= step ? 'var(--gold)' : 'rgba(255,255,255,0.1)',
             }}
           />
         ))}
@@ -273,37 +266,35 @@ export default function QuizPage() {
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ delay: 0.1, duration: 0.5 }}
                 className="text-center mb-10"
               >
-                <h1 className="text-[clamp(1.75rem,5vw,2.25rem)] font-light leading-tight mb-3">
-                  What do the stars have{' '}
-                  <span className="text-gradient-gold">in store</span> for you?
+                <h1 className="text-[clamp(1.75rem,5vw,2.25rem)] font-heading font-light leading-tight mb-3 text-white/90">
+                  What do the stars have in store for you?
                 </h1>
-                <p className="text-white-muted text-sm">Choose what matters most right now</p>
+                <p className="text-white/40 text-sm">Choose what matters most right now</p>
               </motion.div>
 
               <div className="w-full space-y-3">
                 {FOCUS_OPTIONS.map((opt, i) => (
                   <motion.button
                     key={opt.key}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     transition={{ delay: 0.2 + i * 0.1, duration: 0.4 }}
                     onClick={() => handleFocusSelect(opt.key)}
-                    className="w-full glass-card p-5 flex items-center gap-4 text-left group cursor-pointer
-                               hover:border-[rgba(212,168,83,0.3)] active:scale-[0.98] transition-all duration-200"
+                    className="w-full p-5 flex items-center gap-4 text-left group cursor-pointer
+                               border border-white/10 hover:border-gold/30 active:scale-[0.98] transition-all duration-200"
                   >
-                    <span className="text-3xl">{opt.emoji}</span>
-                    <div>
-                      <div className="text-white text-[1.05rem] font-medium group-hover:text-gold transition-colors">
+                    <div className="flex-1">
+                      <div className="text-white/80 text-[1rem] group-hover:text-gold transition-colors">
                         {opt.label}
                       </div>
-                      <div className="text-white-dim text-sm mt-0.5">{opt.sub}</div>
+                      <div className="text-white/30 text-sm mt-0.5">{opt.sub}</div>
                     </div>
-                    <svg className="ml-auto w-5 h-5 text-white-dim group-hover:text-gold transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-4 h-4 text-white/20 group-hover:text-gold transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
                     </svg>
                   </motion.button>
@@ -323,37 +314,35 @@ export default function QuizPage() {
               transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
-              {/* Back button */}
-              <button onClick={goBack} className="absolute top-4 left-0 text-white-dim hover:text-white p-2 transition-colors">
+              <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
                 <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
 
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ delay: 0.1, duration: 0.5 }}
                 className="text-center mb-8"
               >
-                <h1 className="text-[clamp(1.75rem,5vw,2.25rem)] font-light leading-tight mb-3">
-                  When were you <span className="text-gradient-gold">born</span>?
+                <h1 className="text-[clamp(1.75rem,5vw,2.25rem)] font-heading font-light leading-tight mb-3 text-white/90">
+                  When were you born?
                 </h1>
-                <p className="text-white-muted text-sm">Your birth date reveals your cosmic blueprint</p>
+                <p className="text-white/40 text-sm">Your birth date reveals your cosmic blueprint</p>
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
                 className="w-full space-y-4"
               >
-                {/* Month / Day / Year */}
                 <div className="grid grid-cols-3 gap-3">
                   <select
                     value={state.birthMonth}
                     onChange={(e) => setState((s) => ({ ...s, birthMonth: e.target.value, error: '' }))}
-                    className="!bg-[rgba(255,255,255,0.05)] !text-white appearance-none"
+                    className="!border !border-white/10 !rounded-none !border-b-white/15 !px-3 !py-3"
                   >
                     <option value="">Month</option>
                     {MONTHS.map((m, i) => (
@@ -364,7 +353,7 @@ export default function QuizPage() {
                   <select
                     value={state.birthDay}
                     onChange={(e) => setState((s) => ({ ...s, birthDay: e.target.value, error: '' }))}
-                    className="!bg-[rgba(255,255,255,0.05)] !text-white appearance-none"
+                    className="!border !border-white/10 !rounded-none !border-b-white/15 !px-3 !py-3"
                   >
                     <option value="">Day</option>
                     {days.map((d) => (
@@ -375,7 +364,7 @@ export default function QuizPage() {
                   <select
                     value={state.birthYear}
                     onChange={(e) => setState((s) => ({ ...s, birthYear: e.target.value, error: '' }))}
-                    className="!bg-[rgba(255,255,255,0.05)] !text-white appearance-none"
+                    className="!border !border-white/10 !rounded-none !border-b-white/15 !px-3 !py-3"
                   >
                     <option value="">Year</option>
                     {years.map((y) => (
@@ -384,10 +373,9 @@ export default function QuizPage() {
                   </select>
                 </div>
 
-                {/* Birth time toggle */}
                 <button
                   onClick={() => setState((s) => ({ ...s, showBirthTime: !s.showBirthTime }))}
-                  className="text-gold text-sm flex items-center gap-2 mx-auto cursor-pointer hover:text-gold-light transition-colors"
+                  className="text-gold/60 text-sm flex items-center gap-2 mx-auto cursor-pointer hover:text-gold transition-colors"
                 >
                   <span>{state.showBirthTime ? '−' : '+'}</span>
                   Add birth time for a more accurate reading
@@ -403,23 +391,21 @@ export default function QuizPage() {
                       type="time"
                       value={state.birthTime}
                       onChange={(e) => setState((s) => ({ ...s, birthTime: e.target.value }))}
-                      className="!bg-[rgba(255,255,255,0.05)] !text-white w-full"
+                      className="w-full [color-scheme:dark]"
                       placeholder="Birth time"
                     />
                   </motion.div>
                 )}
 
                 {state.error && (
-                  <p className="text-red-400 text-sm text-center">{state.error}</p>
+                  <p className="text-red-400/80 text-sm text-center">{state.error}</p>
                 )}
 
                 <button
                   onClick={handleBirthSubmit}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)]
-                             text-[var(--navy)] font-semibold text-[1.05rem] cursor-pointer
-                             hover:shadow-[0_0_30px_rgba(212,168,83,0.3)] active:scale-[0.98] transition-all duration-200"
+                  className="w-full btn-primary py-4 text-[1rem] cursor-pointer"
                 >
-                  Reveal My Reading ✦
+                  Reveal My Reading
                 </button>
               </motion.div>
             </motion.div>
@@ -436,7 +422,7 @@ export default function QuizPage() {
               transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
-              <button onClick={goBack} className="absolute top-4 left-0 text-white-dim hover:text-white p-2 transition-colors">
+              <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
                 <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
                 </svg>
@@ -451,48 +437,46 @@ export default function QuizPage() {
                   transition={{ duration: 0.8 }}
                   className="w-full"
                 >
-                  <div className="text-center mb-6">
-                    <div className="text-5xl mb-3">
+                  <div className="text-center mb-8">
+                    <div className="text-4xl mb-3 opacity-60">
                       {getSignEmoji(state.sign)}
                     </div>
-                    <h2 className="text-[clamp(1.5rem,4vw,2rem)] font-light">
-                      Your stars have <span className="text-gradient-gold">spoken</span>
+                    <h2 className="text-[clamp(1.5rem,4vw,2rem)] font-heading font-light text-white/90">
+                      Your stars have spoken
                     </h2>
-                    <p className="text-white-dim text-sm mt-1">
-                      {state.sign} • {state.element} Sign
+                    <p className="text-white/30 text-sm mt-1">
+                      {state.sign} · {state.element} Sign
                     </p>
                   </div>
 
                   {/* Teaser reading */}
                   <div className="glass-card p-6 mb-4">
-                    <p className="text-white-muted leading-relaxed text-[0.95rem]">
+                    <p className="text-white/70 leading-relaxed text-[0.95rem] font-light">
                       {state.teaser}
                     </p>
                   </div>
 
                   {/* Blurred preview */}
-                  <div className="relative glass-card p-6 mb-6">
-                    <p className="text-white-muted leading-relaxed text-[0.95rem] blur-[6px] select-none" aria-hidden>
+                  <div className="relative glass-card p-6 mb-8">
+                    <p className="text-white/70 leading-relaxed text-[0.95rem] blur-[6px] select-none" aria-hidden>
                       The coming weeks bring extraordinary planetary alignments that directly impact your path.
                       A rare conjunction between Venus and Jupiter in your fifth house creates an opening for
                       profound connection and creative breakthrough. Meanwhile, Saturn&apos;s transit through your
                       tenth house suggests that career ambitions...
                     </p>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="glass-card px-5 py-2.5 flex items-center gap-2">
-                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--gold)">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      <div className="border border-white/10 px-4 py-2 flex items-center gap-2 bg-black/50">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.5)">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
-                        <span className="text-gold text-sm font-medium">Full reading locked</span>
+                        <span className="text-white/50 text-sm">Full reading locked</span>
                       </div>
                     </div>
                   </div>
 
                   <button
                     onClick={() => goForward(4)}
-                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)]
-                               text-[var(--navy)] font-semibold text-[1.05rem] cursor-pointer
-                               hover:shadow-[0_0_30px_rgba(212,168,83,0.3)] active:scale-[0.98] transition-all duration-200"
+                    className="w-full btn-primary py-4 text-[1rem] cursor-pointer"
                   >
                     Unlock Your Full Reading
                   </button>
@@ -512,29 +496,27 @@ export default function QuizPage() {
               transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
-              <button onClick={goBack} className="absolute top-4 left-0 text-white-dim hover:text-white p-2 transition-colors">
+              <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
                 <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
 
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ delay: 0.1, duration: 0.5 }}
                 className="text-center mb-8"
               >
-                <div className="text-4xl mb-3">✉️</div>
-                <h1 className="text-[clamp(1.5rem,4.5vw,2rem)] font-light leading-tight mb-2">
-                  Where should we send your{' '}
-                  <span className="text-gradient-gold">daily readings</span>?
+                <h1 className="text-[clamp(1.5rem,4.5vw,2rem)] font-heading font-light leading-tight mb-2 text-white/90">
+                  Where should we send your daily readings?
                 </h1>
-                <p className="text-white-dim text-sm">Plus a personalized daily horoscope every morning</p>
+                <p className="text-white/30 text-sm">Plus a personalized daily horoscope every morning</p>
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
                 className="w-full space-y-4"
               >
@@ -543,27 +525,24 @@ export default function QuizPage() {
                   value={state.email}
                   onChange={(e) => setState((s) => ({ ...s, email: e.target.value, error: '' }))}
                   placeholder="your@email.com"
-                  className="!bg-[rgba(255,255,255,0.05)] !text-white w-full text-center text-lg"
+                  className="w-full text-center text-lg"
                   autoFocus
                   onKeyDown={(e) => e.key === 'Enter' && handleEmailSubmit()}
                 />
 
                 {state.error && (
-                  <p className="text-red-400 text-sm text-center">{state.error}</p>
+                  <p className="text-red-400/80 text-sm text-center">{state.error}</p>
                 )}
 
                 <button
                   onClick={handleEmailSubmit}
                   disabled={state.loading}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)]
-                             text-[var(--navy)] font-semibold text-[1.05rem] cursor-pointer
-                             hover:shadow-[0_0_30px_rgba(212,168,83,0.3)] active:scale-[0.98] transition-all duration-200
-                             disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full btn-primary py-4 text-[1rem] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {state.loading ? 'Creating your account...' : 'Get My Free Reading'}
                 </button>
 
-                <p className="text-white-dim text-xs text-center">
+                <p className="text-white/20 text-xs text-center">
                   No spam, ever. Unsubscribe anytime.
                 </p>
               </motion.div>
@@ -581,33 +560,33 @@ export default function QuizPage() {
               transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
               className="flex flex-col items-center py-8 min-h-[calc(100dvh-100px)]"
             >
-              <button onClick={goBack} className="absolute top-4 left-0 text-white-dim hover:text-white p-2 transition-colors">
+              <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
                 <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
 
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ delay: 0.1, duration: 0.5 }}
                 className="text-center mb-6"
               >
-                <div className="text-4xl mb-2">{getSignEmoji(state.sign)}</div>
-                <h2 className="text-[clamp(1.25rem,4vw,1.75rem)] font-light">
-                  Your <span className="text-gradient-gold">{state.sign}</span> Reading
+                <div className="text-3xl mb-2 opacity-60">{getSignEmoji(state.sign)}</div>
+                <h2 className="text-[clamp(1.25rem,4vw,1.75rem)] font-heading font-light text-white/90">
+                  Your {state.sign} Reading
                 </h2>
               </motion.div>
 
               {/* Full reading */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
                 className="glass-card p-6 mb-6 w-full"
               >
                 {state.fullReading.split('\n\n').map((para, i) => (
-                  <p key={i} className="text-white-muted leading-relaxed text-[0.95rem] mb-4 last:mb-0">
+                  <p key={i} className="text-white/70 leading-relaxed text-[0.95rem] font-light mb-4 last:mb-0">
                     {para}
                   </p>
                 ))}
@@ -615,22 +594,22 @@ export default function QuizPage() {
 
               {/* Locked sections */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ delay: 0.4, duration: 0.5 }}
                 className="w-full space-y-2 mb-6"
               >
-                <p className="text-white-dim text-sm text-center mb-3">Unlock your complete cosmic profile:</p>
+                <p className="text-white/30 text-sm text-center mb-3">Unlock your complete cosmic profile:</p>
                 {[
-                  { icon: '🔒', label: 'Detailed Love Forecast' },
-                  { icon: '🔒', label: 'Career Opportunities This Month' },
-                  { icon: '🔒', label: 'Your Hidden Strengths' },
-                  { icon: '🔒', label: 'Compatibility with Every Sign' },
-                  { icon: '🔒', label: 'Unlimited AI Chat with Stella' },
+                  'Detailed Love Forecast',
+                  'Career Opportunities This Month',
+                  'Your Hidden Strengths',
+                  'Compatibility with Every Sign',
+                  'Unlimited AI Chat with Stella',
                 ].map((item, i) => (
-                  <div key={i} className="glass-card p-3.5 flex items-center gap-3 opacity-70">
-                    <span className="text-lg">{item.icon}</span>
-                    <span className="text-white-muted text-sm">{item.label}</span>
+                  <div key={i} className="py-3 px-4 flex items-center gap-3 border border-white/5 opacity-60">
+                    <span className="text-white/20">🔒</span>
+                    <span className="text-white/40 text-sm">{item}</span>
                   </div>
                 ))}
               </motion.div>
@@ -638,90 +617,78 @@ export default function QuizPage() {
               {/* Pricing CTA */}
               {!showPricing ? (
                 <motion.button
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   transition={{ delay: 0.6, duration: 0.5 }}
                   onClick={() => setShowPricing(true)}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)]
-                             text-[var(--navy)] font-semibold text-[1.05rem] cursor-pointer
-                             hover:shadow-[0_0_30px_rgba(212,168,83,0.3)] active:scale-[0.98] transition-all duration-200"
+                  className="w-full btn-primary py-4 text-[1rem] cursor-pointer"
                 >
-                  Unlock Everything ✦
+                  Unlock Everything
                 </motion.button>
               ) : (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   transition={{ duration: 0.5 }}
                   className="w-full space-y-3"
                 >
                   {/* Star plan */}
-                  <div className="glass-card p-5 relative border-[rgba(212,168,83,0.3)]! hover:border-[rgba(212,168,83,0.5)]! transition-all">
-                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-gold text-navy text-xs font-bold px-3 py-0.5 rounded-full">
-                      MOST POPULAR
-                    </div>
+                  <div className="p-5 relative border border-white/15 hover:border-gold/30 transition-all">
+                    <p className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-gold text-[9px] uppercase tracking-[0.15em] bg-black px-2">
+                      Most Popular
+                    </p>
                     <div className="flex items-baseline justify-between mb-3">
+                      <span className="text-white/80 text-base font-heading">Star</span>
                       <div>
-                        <span className="text-gold text-lg font-medium">⭐ Star</span>
-                      </div>
-                      <div>
-                        <span className="text-white text-2xl font-light">$9.99</span>
-                        <span className="text-white-dim text-sm">/mo</span>
+                        <span className="text-white/90 text-xl font-heading font-light">$9.99</span>
+                        <span className="text-white/30 text-sm">/mo</span>
                       </div>
                     </div>
-                    <ul className="text-white-dim text-sm space-y-1.5 mb-4">
-                      <li className="flex items-center gap-2"><span className="text-gold">✓</span> Unlimited AI chat with Stella</li>
-                      <li className="flex items-center gap-2"><span className="text-gold">✓</span> Personalized daily readings</li>
-                      <li className="flex items-center gap-2"><span className="text-gold">✓</span> Full birth chart analysis</li>
+                    <ul className="text-white/40 text-sm space-y-1.5 mb-4">
+                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Unlimited AI chat with Stella</li>
+                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Personalized daily readings</li>
+                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Full birth chart analysis</li>
                     </ul>
                     <button
                       onClick={() => handleCheckout('star')}
                       disabled={state.loading}
-                      className="w-full py-3 rounded-xl bg-gradient-to-r from-[var(--gold)] to-[var(--gold-light)]
-                                 text-[var(--navy)] font-semibold cursor-pointer
-                                 hover:shadow-[0_0_20px_rgba(212,168,83,0.3)] active:scale-[0.98] transition-all
-                                 disabled:opacity-50"
+                      className="w-full btn-primary py-3 cursor-pointer disabled:opacity-50"
                     >
                       Subscribe
                     </button>
                   </div>
 
                   {/* Cosmic plan */}
-                  <div className="glass-card p-5 hover:border-[rgba(255,255,255,0.15)]! transition-all">
+                  <div className="p-5 border border-white/[0.08] hover:border-white/15 transition-all">
                     <div className="flex items-baseline justify-between mb-3">
+                      <span className="text-white/80 text-base font-heading">Cosmic</span>
                       <div>
-                        <span className="text-white text-lg font-medium">🌌 Cosmic</span>
-                      </div>
-                      <div>
-                        <span className="text-white text-2xl font-light">$19.99</span>
-                        <span className="text-white-dim text-sm">/mo</span>
+                        <span className="text-white/90 text-xl font-heading font-light">$19.99</span>
+                        <span className="text-white/30 text-sm">/mo</span>
                       </div>
                     </div>
-                    <ul className="text-white-dim text-sm space-y-1.5 mb-4">
-                      <li className="flex items-center gap-2"><span className="text-gold">✓</span> Everything in Star</li>
-                      <li className="flex items-center gap-2"><span className="text-gold">✓</span> Relationship & compatibility readings</li>
-                      <li className="flex items-center gap-2"><span className="text-gold">✓</span> Career guidance & forecasts</li>
-                      <li className="flex items-center gap-2"><span className="text-gold">✓</span> Monthly cosmic forecast</li>
+                    <ul className="text-white/40 text-sm space-y-1.5 mb-4">
+                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Everything in Star</li>
+                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Relationship & compatibility readings</li>
+                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Career guidance & forecasts</li>
+                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Monthly cosmic forecast</li>
                     </ul>
                     <button
                       onClick={() => handleCheckout('cosmic')}
                       disabled={state.loading}
-                      className="w-full py-3 rounded-xl border border-[rgba(255,255,255,0.15)]
-                                 text-white font-semibold cursor-pointer
-                                 hover:bg-[rgba(255,255,255,0.05)] active:scale-[0.98] transition-all
-                                 disabled:opacity-50"
+                      className="w-full btn-ghost py-3 cursor-pointer disabled:opacity-50"
                     >
                       Subscribe
                     </button>
                   </div>
 
                   {state.error && (
-                    <p className="text-red-400 text-sm text-center">{state.error}</p>
+                    <p className="text-red-400/80 text-sm text-center">{state.error}</p>
                   )}
                 </motion.div>
               )}
 
-              <p className="text-white-dim text-xs text-center mt-4">
+              <p className="text-white/20 text-xs text-center mt-4">
                 Cancel anytime. Secure payment via Stripe.
               </p>
             </motion.div>
@@ -738,9 +705,9 @@ function LoadingAnimation() {
 
   useEffect(() => {
     const pts: { x: number; y: number; delay: number }[] = [];
-    for (let i = 0; i < 24; i++) {
-      const angle = (i / 24) * Math.PI * 2;
-      const r = 60 + Math.random() * 40;
+    for (let i = 0; i < 16; i++) {
+      const angle = (i / 16) * Math.PI * 2;
+      const r = 50 + Math.random() * 30;
       pts.push({
         x: Math.cos(angle) * r,
         y: Math.sin(angle) * r,
@@ -756,17 +723,13 @@ function LoadingAnimation() {
       animate={{ opacity: 1 }}
       className="flex flex-col items-center justify-center"
     >
-      <div className="relative w-48 h-48 mb-8">
-        {/* Central glow */}
+      <div className="relative w-40 h-40 mb-8">
+        {/* Central dot */}
         <motion.div
-          className="absolute inset-0 m-auto w-4 h-4 rounded-full bg-gold"
+          className="absolute inset-0 m-auto w-2 h-2 rounded-full bg-white/40"
           animate={{
-            boxShadow: [
-              '0 0 20px rgba(212,168,83,0.3)',
-              '0 0 60px rgba(212,168,83,0.6)',
-              '0 0 20px rgba(212,168,83,0.3)',
-            ],
-            scale: [1, 1.3, 1],
+            opacity: [0.3, 0.8, 0.3],
+            scale: [1, 1.2, 1],
           }}
           transition={{ duration: 2, repeat: Infinity }}
         />
@@ -774,13 +737,13 @@ function LoadingAnimation() {
         {dots.map((dot, i) => (
           <motion.div
             key={i}
-            className="absolute w-1.5 h-1.5 rounded-full bg-white"
+            className="absolute w-1 h-1 rounded-full bg-white/40"
             style={{ left: '50%', top: '50%' }}
             initial={{ x: 0, y: 0, opacity: 0 }}
             animate={{
               x: dot.x,
               y: dot.y,
-              opacity: [0, 1, 0.6],
+              opacity: [0, 0.6, 0.3],
             }}
             transition={{
               duration: 1.5,
@@ -789,21 +752,16 @@ function LoadingAnimation() {
             }}
           />
         ))}
-        {/* Rotating ring */}
+        {/* Subtle ring */}
         <motion.div
-          className="absolute inset-2 rounded-full border border-[rgba(212,168,83,0.2)]"
+          className="absolute inset-4 rounded-full border border-white/[0.06]"
           animate={{ rotate: 360 }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-        />
-        <motion.div
-          className="absolute inset-8 rounded-full border border-[rgba(212,168,83,0.1)]"
-          animate={{ rotate: -360 }}
-          transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
+          transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
         />
       </div>
       <motion.p
-        className="text-white-muted text-lg font-light"
-        animate={{ opacity: [0.5, 1, 0.5] }}
+        className="text-white/40 text-sm font-light"
+        animate={{ opacity: [0.3, 0.7, 0.3] }}
         transition={{ duration: 2, repeat: Infinity }}
       >
         Your stars are aligning...
@@ -819,5 +777,5 @@ function getSignEmoji(sign: string): string {
     Leo: '♌', Virgo: '♍', Libra: '♎', Scorpio: '♏',
     Sagittarius: '♐', Capricorn: '♑', Aquarius: '♒', Pisces: '♓',
   };
-  return map[sign] || '✨';
+  return map[sign] || '✦';
 }

@@ -8,7 +8,6 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
-  isFirst?: boolean;
 }
 
 interface UserData {
@@ -33,7 +32,6 @@ export default function ChatPage() {
       role: 'assistant',
       content: 'The planets have been expecting you. What weighs on your mind?',
       timestamp: new Date(),
-      isFirst: true,
     },
   ]);
   const [input, setInput] = useState('');
@@ -45,7 +43,6 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Check if user is logged in
   useEffect(() => {
     fetch('/api/auth/me')
       .then((res) => res.json())
@@ -56,7 +53,6 @@ export default function ChatPage() {
       .catch(() => setCheckedAuth(true));
   }, []);
 
-  // Gradual revelation: show suggestions after a delay
   useEffect(() => {
     const t = setTimeout(() => setShowSuggestions(true), 1500);
     return () => clearTimeout(t);
@@ -147,7 +143,7 @@ export default function ChatPage() {
       setMessages((prev) =>
         prev.map((m) =>
           m.id === assistantId
-            ? { ...m, content: 'The cosmic connection is temporarily disrupted. Please try again ✨' }
+            ? { ...m, content: 'The cosmic connection is temporarily disrupted. Please try again.' }
             : m
         )
       );
@@ -163,7 +159,6 @@ export default function ChatPage() {
     }
   };
 
-  // Sign-in prompt only after 2nd user message
   const showAuthPrompt = checkedAuth && !user && messageCount >= 2;
 
   return (
@@ -175,77 +170,67 @@ export default function ChatPage() {
         transition={{ duration: 0.6 }}
         className="text-center py-4"
       >
-        <p className="text-xs text-tertiary">✦ Stella</p>
+        <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">Stella</p>
       </motion.div>
 
-      {/* User badge if logged in */}
+      {/* User badge */}
       {user && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="mb-4 flex justify-center"
         >
-          <span className="text-[10px] text-gold/50 bg-gold/5 px-3 py-1 rounded-full border border-gold/10">
-            ✦ Personalized for {user.email}
+          <span className="text-[10px] text-white/30 border border-white/10 px-3 py-1">
+            Personalized for {user.email}
           </span>
         </motion.div>
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto space-y-4 mb-4 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto space-y-6 mb-4">
         <AnimatePresence mode="popLayout">
           {messages.map((msg) => (
             <motion.div
               key={msg.id}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{ duration: 0.3 }}
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`relative max-w-[85%] md:max-w-[75%] rounded-2xl px-5 py-4 text-sm leading-relaxed ${
+                className={`max-w-[85%] md:max-w-[75%] text-sm leading-relaxed ${
                   msg.role === 'user'
-                    ? 'bg-gold/15 text-white border border-gold/10'
-                    : 'glass-card'
+                    ? 'text-white/90'
+                    : 'bg-white/[0.03] rounded-lg px-5 py-4'
                 }`}
               >
                 {msg.role === 'assistant' && (
-                  <span className="text-gold/60 text-xs block mb-2">✦ Stella</span>
+                  <span className="text-white/30 text-[10px] uppercase tracking-wider block mb-2">Stella</span>
                 )}
-                {/* First response shimmer effect */}
-                {msg.isFirst && msg.role === 'assistant' && (
-                  <motion.div
-                    className="absolute inset-0 rounded-2xl bg-[radial-gradient(ellipse_at_center,rgba(212,168,83,0.08)_0%,transparent_70%)]"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: [0, 1, 0] }}
-                    transition={{ duration: 2, ease: 'easeInOut' }}
-                    data-sound="shimmer"
-                  />
-                )}
-                <p className="text-secondary whitespace-pre-wrap font-light relative z-10">{msg.content}</p>
+                <p className="text-white/70 whitespace-pre-wrap font-light">{msg.content}</p>
               </div>
             </motion.div>
           ))}
         </AnimatePresence>
 
-        {/* Typing indicator — animated dots */}
+        {/* Typing indicator */}
         <AnimatePresence>
           {isTyping && messages[messages.length - 1]?.content === '' && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="flex justify-start"
             >
-              <div className="glass-card px-5 py-4 rounded-2xl">
-                <span className="text-gold/60 text-xs block mb-2">✦ Stella</span>
+              <div className="bg-white/[0.03] rounded-lg px-5 py-4">
+                <span className="text-white/30 text-[10px] uppercase tracking-wider block mb-2">Stella</span>
                 <div className="flex gap-1.5">
                   {[0, 1, 2].map((i) => (
                     <motion.span
                       key={i}
-                      className="w-1.5 h-1.5 bg-gold/40 rounded-full"
-                      animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.1, 0.8] }}
+                      className="w-1 h-1 bg-white/30 rounded-full"
+                      animate={{ opacity: [0.3, 1, 0.3] }}
                       transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
                     />
                   ))}
@@ -258,7 +243,7 @@ export default function ChatPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Sign-in prompt — only after 2nd message */}
+      {/* Sign-in prompt */}
       <AnimatePresence>
         {showAuthPrompt && (
           <motion.div
@@ -267,36 +252,36 @@ export default function ChatPage() {
             exit={{ opacity: 0, height: 0 }}
             className="mb-3 overflow-hidden"
           >
-            <div className="p-3 rounded-xl bg-gold/5 border border-gold/10 text-center">
-              <p className="text-xs text-tertiary">
+            <div className="py-3 text-center border-t border-white/5">
+              <p className="text-xs text-white/30">
                 <a href="/birth-chart" className="text-gold hover:text-gold-light transition-colors">
                   Enter your birth details
                 </a>
-                {' '}for personalized readings ✦
+                {' '}for personalized readings
               </p>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Suggestion chips — appear with delay (gradual revelation) */}
+      {/* Suggestion chips */}
       <AnimatePresence>
         {showSuggestions && messages.length <= 1 && (
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
             className="flex flex-wrap gap-2 mb-4 justify-center"
           >
             {suggestions.map((s, i) => (
               <motion.button
                 key={s}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.1, duration: 0.3 }}
                 onClick={() => handleSend(s)}
-                className="text-xs px-4 py-2 rounded-full border border-white/10 text-hint hover:text-white hover:border-gold/20 hover:bg-gold/5 transition-all duration-200"
+                className="text-xs px-4 py-2 border border-white/10 text-white/30 hover:text-white/60 hover:border-gold/20 transition-all duration-200 cursor-pointer"
               >
                 {s}
               </motion.button>
@@ -305,8 +290,8 @@ export default function ChatPage() {
         )}
       </AnimatePresence>
 
-      {/* Input */}
-      <div className="glass-card p-3 flex items-end gap-3">
+      {/* Input — minimal, bottom border only */}
+      <div className="flex items-end gap-3 border-b border-white/15 pb-2">
         <textarea
           ref={inputRef}
           value={input}
@@ -314,13 +299,13 @@ export default function ChatPage() {
           onKeyDown={handleKeyDown}
           placeholder="Ask the stars anything..."
           rows={1}
-          className="flex-1 bg-transparent border-none resize-none text-sm placeholder:text-hint focus:ring-0 focus:shadow-none p-2 max-h-32"
+          className="flex-1 bg-transparent border-none resize-none text-sm placeholder:text-white/20 p-2 max-h-32"
           style={{ outline: 'none', boxShadow: 'none' }}
         />
         <button
           onClick={() => handleSend()}
           disabled={!input.trim() || isTyping}
-          className="p-3 rounded-xl bg-gold/10 text-gold hover:bg-gold/20 disabled:opacity-30 disabled:hover:bg-gold/10 transition-all duration-200 shrink-0"
+          className="p-2 text-white/30 hover:text-gold disabled:opacity-20 transition-all duration-200 shrink-0 cursor-pointer"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path
@@ -334,7 +319,7 @@ export default function ChatPage() {
         </button>
       </div>
 
-      <p className="text-center text-[10px] text-hint mt-3">
+      <p className="text-center text-[10px] text-white/20 mt-3">
         3 free questions per day · Upgrade for unlimited
       </p>
     </div>

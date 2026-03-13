@@ -16,7 +16,7 @@ interface Particle {
 
 export default function SparkleEffect({
   trigger,
-  count = 20,
+  count = 12,
   className = '',
 }: {
   trigger: boolean;
@@ -35,10 +35,10 @@ export default function SparkleEffect({
           x: 0,
           y: 0,
           angle,
-          distance: 40 + Math.random() * 60,
-          size: 2 + Math.random() * 3,
-          duration: 0.6 + Math.random() * 0.4,
-          delay: Math.random() * 0.2,
+          distance: 30 + Math.random() * 40,
+          size: 1.5 + Math.random() * 2,
+          duration: 0.8 + Math.random() * 0.4,
+          delay: Math.random() * 0.15,
         });
       }
       setParticles(p);
@@ -57,10 +57,9 @@ export default function SparkleEffect({
             style={{
               width: p.size,
               height: p.size,
-              background: `radial-gradient(circle, #e8c97a, #d4a853)`,
-              boxShadow: '0 0 6px rgba(212, 168, 83, 0.6)',
+              background: '#d4a853',
             }}
-            initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+            initial={{ x: 0, y: 0, opacity: 0.8, scale: 1 }}
             animate={{
               x: Math.cos(p.angle) * p.distance,
               y: Math.sin(p.angle) * p.distance,

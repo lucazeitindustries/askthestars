@@ -29,7 +29,6 @@ export default function CompatibilityPage() {
   const handleCheck = async () => {
     if (!sign1 || !sign2) return;
 
-    // Easter egg: same sign
     if (sign1 === sign2) {
       setEasterEgg(true);
     } else {
@@ -52,7 +51,6 @@ export default function CompatibilityPage() {
       const data = await res.json();
       setResult(data);
 
-      // Staggered reveal
       let count = 0;
       const interval = setInterval(() => {
         count++;
@@ -60,7 +58,6 @@ export default function CompatibilityPage() {
         if (count >= 7) clearInterval(interval);
       }, 350);
 
-      // Sparkle if high score
       if (data.score > 75) {
         setTimeout(() => setShowSparkle(true), 1200);
       }
@@ -100,7 +97,6 @@ export default function CompatibilityPage() {
     }
   };
 
-  // Auto-submit when sign2 is selected
   useEffect(() => {
     if (sign1 && sign2) {
       handleCheck();
@@ -115,27 +111,27 @@ export default function CompatibilityPage() {
     <div className="min-h-screen pt-28 pb-20 px-6">
       <div className="content-narrow">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16"
         >
-          <h1 className="text-section mb-4">
-            <span className="text-gradient-gold">Compatibility</span>
+          <h1 className="text-section mb-4 text-white/90">
+            Compatibility
           </h1>
-          <p className="text-secondary text-body">
+          <p className="text-white/50 text-body">
             Discover the cosmic chemistry between two signs.
           </p>
         </motion.div>
 
         {/* Step 1: Select YOUR sign */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.6 }}
-          className="glass-card p-8 mb-4"
+          className="mb-12"
         >
-          <label className="block text-xs uppercase tracking-widest text-tertiary mb-4 text-center">
+          <label className="block text-[10px] uppercase tracking-[0.2em] text-white/30 mb-6 text-center">
             {!sign1 ? 'Select your sign' : 'Your sign'}
           </label>
           <div className="grid grid-cols-6 gap-2">
@@ -150,20 +146,20 @@ export default function CompatibilityPage() {
                   setVisibleSections(0);
                   setEasterEgg(false);
                 }}
-                className={`zodiac-glow p-2.5 rounded-lg text-center transition-all duration-200 ${
+                className={`zodiac-glow p-2.5 text-center transition-all duration-200 cursor-pointer ${
                   sign1 === sign.slug
-                    ? 'bg-gold/15 border border-gold/30 text-gold'
-                    : 'bg-white/[0.02] border border-white/5 text-tertiary hover:border-white/10 hover:text-white'
+                    ? 'border border-gold/30 text-gold'
+                    : 'border border-transparent text-white/40 hover:text-white/60 hover:border-white/10'
                 }`}
               >
-                <span className={`text-xl block ${sign1 === sign.slug ? 'zodiac-breathe' : ''}`}>{sign.symbol}</span>
+                <span className="text-xl block">{sign.symbol}</span>
                 <span className="text-[9px] block mt-0.5">{sign.name}</span>
               </button>
             ))}
           </div>
         </motion.div>
 
-        {/* Step 2: Select THEIR sign — only appears after step 1 */}
+        {/* Step 2: Select THEIR sign */}
         <AnimatePresence>
           {sign1 && (
             <motion.div
@@ -171,29 +167,27 @@ export default function CompatibilityPage() {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-              className="overflow-hidden"
+              className="overflow-hidden mb-12"
             >
-              <div className="glass-card p-8 mb-4">
-                <label className="block text-xs uppercase tracking-widest text-tertiary mb-4 text-center">
-                  Now select theirs
-                </label>
-                <div className="grid grid-cols-6 gap-2">
-                  {zodiacSigns.map((sign) => (
-                    <button
-                      key={sign.slug}
-                      type="button"
-                      onClick={() => setSign2(sign.slug)}
-                      className={`zodiac-glow p-2.5 rounded-lg text-center transition-all duration-200 ${
-                        sign2 === sign.slug
-                          ? 'bg-gold/15 border border-gold/30 text-gold'
-                          : 'bg-white/[0.02] border border-white/5 text-tertiary hover:border-white/10 hover:text-white'
-                      }`}
-                    >
-                      <span className={`text-xl block ${sign2 === sign.slug ? 'zodiac-breathe' : ''}`}>{sign.symbol}</span>
-                      <span className="text-[9px] block mt-0.5">{sign.name}</span>
-                    </button>
-                  ))}
-                </div>
+              <label className="block text-[10px] uppercase tracking-[0.2em] text-white/30 mb-6 text-center">
+                Now select theirs
+              </label>
+              <div className="grid grid-cols-6 gap-2">
+                {zodiacSigns.map((sign) => (
+                  <button
+                    key={sign.slug}
+                    type="button"
+                    onClick={() => setSign2(sign.slug)}
+                    className={`zodiac-glow p-2.5 text-center transition-all duration-200 cursor-pointer ${
+                      sign2 === sign.slug
+                        ? 'border border-gold/30 text-gold'
+                        : 'border border-transparent text-white/40 hover:text-white/60 hover:border-white/10'
+                    }`}
+                  >
+                    <span className="text-xl block">{sign.symbol}</span>
+                    <span className="text-[9px] block mt-0.5">{sign.name}</span>
+                  </button>
+                ))}
               </div>
             </motion.div>
           )}
@@ -204,19 +198,14 @@ export default function CompatibilityPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="glass-card p-10 text-center"
+            className="text-center py-20"
           >
             <motion.div
-              className="w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full mx-auto"
+              className="w-6 h-6 border border-white/20 border-t-white/60 rounded-full mx-auto"
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
             />
-            <p className="text-sm text-tertiary mt-4">Reading the stars...</p>
-            <div className="mt-6 space-y-3 max-w-xs mx-auto">
-              <div className="skeleton h-4 w-full" />
-              <div className="skeleton h-4 w-4/5" />
-              <div className="skeleton h-4 w-3/5" />
-            </div>
+            <p className="text-xs text-white/30 mt-4">Reading the stars...</p>
           </motion.div>
         )}
 
@@ -224,12 +213,12 @@ export default function CompatibilityPage() {
         <AnimatePresence>
           {easterEgg && result && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="glass-card p-6 mb-6 border border-gold/20 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mb-8 text-center py-4 border-t border-b border-white/5"
             >
               <p className="text-gold text-sm">✦ Checking compatibility with yourself? Cosmic narcissist energy. ✦</p>
-              <p className="text-[11px] text-tertiary mt-2">We respect the self-love, though.</p>
+              <p className="text-[10px] text-white/30 mt-2">We respect the self-love, though.</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -243,96 +232,85 @@ export default function CompatibilityPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.4 }}
-              className="space-y-6"
+              className="space-y-16"
             >
-              {/* Score — section 1 */}
+              {/* Score */}
               {visibleSections >= 1 && (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   transition={{ duration: 0.5 }}
-                  className="glass-card p-8 md:p-10 text-center"
+                  className="text-center"
                 >
-                  <div className="flex items-center justify-center gap-6 mb-6">
+                  <div className="flex items-center justify-center gap-8 mb-8">
                     <div className="text-center">
-                      <span className="text-4xl zodiac-breathe inline-block">{s1Data.symbol}</span>
-                      <p className="text-sm text-secondary mt-1">{s1Data.name}</p>
+                      <span className="text-4xl opacity-60">{s1Data.symbol}</span>
+                      <p className="text-xs text-white/40 mt-1">{s1Data.name}</p>
                     </div>
-                    <div className="text-gold/30 text-2xl">×</div>
+                    <div className="text-white/20 text-lg">×</div>
                     <div className="text-center">
-                      <span className="text-4xl zodiac-breathe inline-block">{s2Data.symbol}</span>
-                      <p className="text-sm text-secondary mt-1">{s2Data.name}</p>
+                      <span className="text-4xl opacity-60">{s2Data.symbol}</span>
+                      <p className="text-xs text-white/40 mt-1">{s2Data.name}</p>
                     </div>
                   </div>
 
-                  {/* Score ring with count-up */}
-                  <div className="relative w-32 h-32 mx-auto mb-6">
+                  {/* Score ring — thinner, more elegant */}
+                  <div className="relative w-28 h-28 mx-auto mb-8">
                     <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
-                      <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="6" />
+                      <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="2" />
                       <motion.circle
-                        cx="60" cy="60" r="52" fill="none" stroke="url(#goldGrad)" strokeWidth="6"
+                        cx="60" cy="60" r="54" fill="none" stroke="#d4a853" strokeWidth="2"
                         strokeLinecap="round"
-                        strokeDasharray={`${2 * Math.PI * 52}`}
-                        initial={{ strokeDashoffset: 2 * Math.PI * 52 }}
-                        animate={{ strokeDashoffset: 2 * Math.PI * 52 * (1 - result.score / 100) }}
+                        strokeDasharray={`${2 * Math.PI * 54}`}
+                        initial={{ strokeDashoffset: 2 * Math.PI * 54 }}
+                        animate={{ strokeDashoffset: 2 * Math.PI * 54 * (1 - result.score / 100) }}
                         transition={{ duration: 1.5, ease: 'easeOut', delay: 0.3 }}
                       />
-                      <defs>
-                        <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#d4a853" />
-                          <stop offset="100%" stopColor="#e8c97a" />
-                        </linearGradient>
-                      </defs>
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <CountUp
                         value={result.score}
                         duration={1.5}
                         delay={0.3}
-                        className="text-3xl font-light text-gradient-gold"
+                        className="text-2xl font-heading font-light text-white/90"
                       />
                     </div>
-                    {/* Sparkle burst for high scores */}
-                    <SparkleEffect trigger={showSparkle} count={24} />
+                    <SparkleEffect trigger={showSparkle} count={12} />
                   </div>
                 </motion.div>
               )}
 
-              {/* Detail sections — staggered */}
+              {/* Detail sections — whitespace separated, no cards */}
               {[
-                { title: 'The Spark', icon: '✦', content: result.spark, section: 2 },
-                { title: 'The Friction', icon: '◇', content: result.friction, section: 3 },
-                { title: 'Emotional Connection', icon: '♡', content: result.emotional, section: 4 },
-                { title: 'Chemistry', icon: '⚡', content: result.chemistry, section: 5 },
-                { title: 'Long-term Potential', icon: '∞', content: result.longterm, section: 6 },
+                { title: 'The Spark', content: result.spark, section: 2 },
+                { title: 'The Friction', content: result.friction, section: 3 },
+                { title: 'Emotional Connection', content: result.emotional, section: 4 },
+                { title: 'Chemistry', content: result.chemistry, section: 5 },
+                { title: 'Long-term Potential', content: result.longterm, section: 6 },
               ].map((s) => (
                 visibleSections >= s.section && (
                   <motion.div
                     key={s.title}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     transition={{ duration: 0.4 }}
-                    className="glass-card p-6 md:p-8"
                   >
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="text-gold/60">{s.icon}</span>
-                      <h3 className="text-sm font-medium">{s.title}</h3>
-                    </div>
-                    <p className="text-secondary text-sm leading-relaxed font-light">{s.content}</p>
+                    <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] mb-4">{s.title}</p>
+                    <p className="text-white/70 text-sm leading-relaxed font-light">{s.content}</p>
                   </motion.div>
                 )
               ))}
 
-              {/* Advice — section 7 */}
+              {/* Advice */}
               {visibleSections >= 7 && (
                 <motion.div
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   transition={{ duration: 0.4 }}
-                  className="glass-card p-8 border border-gold/10"
+                  className="border-t border-white/5 pt-8"
                 >
-                  <h3 className="text-xs uppercase tracking-widest text-gold/60 mb-4">Cosmic Advice</h3>
-                  <p className="text-secondary text-sm leading-relaxed font-light">{result.advice}</p>
+                  <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] mb-4">Cosmic Advice</p>
+                  <p className="text-white/50 text-sm leading-relaxed font-light italic">{result.advice}</p>
                 </motion.div>
               )}
 
@@ -343,13 +321,10 @@ export default function CompatibilityPage() {
                   animate={{ opacity: 1 }}
                   className="text-center space-y-4 pt-4"
                 >
-                  <p className="text-xs text-hint">
+                  <p className="text-[10px] text-white/20">
                     Want a deeper reading? Get your full birth charts analyzed together.
                   </p>
-                  <Link
-                    href="/birth-chart"
-                    className="inline-block px-8 py-3 bg-gold/10 text-gold border border-gold/20 rounded-full text-sm hover:bg-gold/20 transition-all duration-300"
-                  >
+                  <Link href="/birth-chart" className="btn-ghost inline-block">
                     Get Full Synastry Reading
                   </Link>
                 </motion.div>

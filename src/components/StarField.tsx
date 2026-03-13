@@ -16,14 +16,14 @@ export default function StarField() {
 
   useEffect(() => {
     const generated: Star[] = [];
-    for (let i = 0; i < 150; i++) {
+    for (let i = 0; i < 80; i++) {
       generated.push({
         id: i,
         x: Math.random() * 100,
         y: Math.random() * 100,
-        size: Math.random() * 2 + 1,
-        duration: Math.random() * 4 + 2,
-        delay: Math.random() * 5,
+        size: Math.random() * 1.5 + 0.5,
+        duration: Math.random() * 6 + 4,
+        delay: Math.random() * 8,
       });
     }
     setStars(generated);

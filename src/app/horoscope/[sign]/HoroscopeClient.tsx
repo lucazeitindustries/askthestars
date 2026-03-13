@@ -48,9 +48,9 @@ export default function HoroscopeClient({ sign, reading, prev, next, today }: Pr
   const displayFocus = aiReading?.focus_area;
 
   const sections = [
-    { title: 'Love & Relationships', icon: '♡', content: reading.love },
-    { title: 'Career & Finance', icon: '◇', content: reading.career },
-    { title: 'Health & Wellness', icon: '○', content: reading.wellness },
+    { label: 'Love & Relationships', content: reading.love },
+    { label: 'Career & Finance', content: reading.career },
+    { label: 'Health & Wellness', content: reading.wellness },
   ];
 
   return (
@@ -58,35 +58,35 @@ export default function HoroscopeClient({ sign, reading, prev, next, today }: Pr
       <div className="content-narrow">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16"
         >
           <motion.span
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="text-6xl md:text-7xl block mb-4 zodiac-breathe inline-block"
+            className="text-5xl md:text-6xl block mb-6 opacity-60"
           >
             {sign.symbol}
           </motion.span>
-          <h1 className="text-section mb-2">
-            <span className="text-gradient-gold">{sign.name}</span>
+          <h1 className="text-section mb-3 text-white/90">
+            {sign.name}
           </h1>
-          <p className="text-tertiary text-sm">{sign.dates}</p>
-          <p className="text-hint text-xs mt-1">{today}</p>
+          <p className="text-white/30 text-xs tracking-wide">{sign.dates}</p>
+          <p className="text-white/20 text-[10px] mt-1">{today}</p>
         </motion.div>
 
-        {/* Period tabs — sliding direction hint */}
-        <div className="flex justify-center gap-3 mt-6 mb-8">
-          <span className="text-xs text-gold px-3 py-1.5 rounded-full border border-gold/20 bg-gold/10">
+        {/* Period tabs */}
+        <div className="flex justify-center gap-3 mb-10">
+          <span className="text-xs text-gold px-3 py-1.5 border border-gold/20">
             Daily
           </span>
-          <Link href={`/horoscope/${sign.slug}/weekly`} className="text-xs text-tertiary hover:text-white transition-colors px-3 py-1.5 rounded-full border border-white/10 hover:border-white/20">
+          <Link href={`/horoscope/${sign.slug}/weekly`} className="text-xs text-white/30 hover:text-white/60 transition-colors px-3 py-1.5 border border-white/10 hover:border-white/20">
             Weekly
           </Link>
-          <Link href={`/horoscope/${sign.slug}/monthly`} className="text-xs text-tertiary hover:text-white transition-colors px-3 py-1.5 rounded-full border border-white/10 hover:border-white/20">
+          <Link href={`/horoscope/${sign.slug}/monthly`} className="text-xs text-white/30 hover:text-white/60 transition-colors px-3 py-1.5 border border-white/10 hover:border-white/20">
             Monthly
           </Link>
         </div>
@@ -96,7 +96,7 @@ export default function HoroscopeClient({ sign, reading, prev, next, today }: Pr
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.15, duration: 0.5 }}
-          className="flex justify-center gap-6 mb-12 text-xs text-tertiary"
+          className="flex justify-center gap-6 mb-16 text-[11px] text-white/30"
         >
           <span>{sign.element} Sign</span>
           <span>·</span>
@@ -107,61 +107,48 @@ export default function HoroscopeClient({ sign, reading, prev, next, today }: Pr
 
         {/* Quick stats */}
         <ScrollReveal>
-          <div className="glass-card p-6 flex justify-around mb-8">
+          <div className="flex justify-around py-6 mb-12 border-t border-b border-white/5">
             <div className="text-center">
-              <p className="text-xs text-tertiary mb-1">Mood</p>
-              <p className="text-sm font-medium text-gold">{displayMood}</p>
+              <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1">Mood</p>
+              <p className="text-sm text-white/70">{displayMood}</p>
             </div>
-            <div className="w-px bg-white/10" />
             <div className="text-center">
-              <p className="text-xs text-tertiary mb-1">Lucky #</p>
-              <p className="text-sm font-medium text-gold">{displayLucky}</p>
+              <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1">Lucky #</p>
+              <p className="text-sm text-white/70">{displayLucky}</p>
             </div>
-            <div className="w-px bg-white/10" />
-            {displayColor ? (
+            {displayColor && (
               <div className="text-center">
-                <p className="text-xs text-tertiary mb-1">Color</p>
-                <p className="text-sm font-medium text-gold">{displayColor}</p>
-              </div>
-            ) : (
-              <div className="text-center">
-                <p className="text-xs text-tertiary mb-1">Traits</p>
-                <p className="text-sm font-medium text-gold">{sign.traits[0]}</p>
+                <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1">Color</p>
+                <p className="text-sm text-white/70">{displayColor}</p>
               </div>
             )}
             {displayFocus && (
-              <>
-                <div className="w-px bg-white/10" />
-                <div className="text-center">
-                  <p className="text-xs text-tertiary mb-1">Focus</p>
-                  <p className="text-sm font-medium text-gold capitalize">{displayFocus}</p>
-                </div>
-              </>
+              <div className="text-center">
+                <p className="text-[10px] text-white/30 uppercase tracking-wider mb-1">Focus</p>
+                <p className="text-sm text-white/70 capitalize">{displayFocus}</p>
+              </div>
             )}
           </div>
         </ScrollReveal>
 
         {/* Overall reading */}
         <ScrollReveal delay={0.1}>
-          <div className="glass-card p-8 md:p-10 mb-6">
-            <h2 className="text-xs uppercase tracking-[0.2em] text-gold/60 mb-4">Today&apos;s Reading</h2>
-            <p className="text-secondary leading-relaxed font-light text-body">{displayReading}</p>
+          <div className="mb-20">
+            <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] mb-6">Today&apos;s Reading</p>
+            <p className="text-white/70 leading-relaxed font-light text-body">{displayReading}</p>
             {aiReading && (
-              <p className="text-[10px] text-gold/30 mt-4">✦ AI-generated based on today&apos;s planetary transits</p>
+              <p className="text-[10px] text-white/20 mt-6">✦ AI-generated based on today&apos;s planetary transits</p>
             )}
           </div>
         </ScrollReveal>
 
-        {/* Section readings */}
-        <div className="space-y-4">
+        {/* Section readings — whitespace separated, no cards */}
+        <div className="space-y-16">
           {sections.map((section, i) => (
-            <ScrollReveal key={section.title} delay={0.1 + i * 0.1}>
-              <div className="glass-card p-8">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-gold/60 text-lg">{section.icon}</span>
-                  <h3 className="text-sm font-medium">{section.title}</h3>
-                </div>
-                <p className="text-secondary text-sm leading-relaxed font-light">{section.content}</p>
+            <ScrollReveal key={section.label} delay={0.1 + i * 0.08}>
+              <div>
+                <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] mb-4">{section.label}</p>
+                <p className="text-white/70 text-sm leading-relaxed font-light">{section.content}</p>
               </div>
             </ScrollReveal>
           ))}
@@ -169,14 +156,11 @@ export default function HoroscopeClient({ sign, reading, prev, next, today }: Pr
 
         {/* CTA */}
         <ScrollReveal delay={0.3}>
-          <div className="text-center mt-12 space-y-4">
-            <Link
-              href="/birth-chart"
-              className="inline-block px-8 py-3 bg-gold text-navy font-medium rounded-full text-sm hover:bg-gold-light transition-all duration-300"
-            >
+          <div className="text-center mt-20 space-y-4">
+            <Link href="/birth-chart" className="btn-ghost inline-block">
               Get Your Full Birth Chart Reading
             </Link>
-            <p className="text-[11px] text-hint">
+            <p className="text-[10px] text-white/20">
               Personalized AI reading based on your exact birth data
             </p>
           </div>
@@ -187,18 +171,18 @@ export default function HoroscopeClient({ sign, reading, prev, next, today }: Pr
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.5 }}
-          className="flex justify-between items-center mt-16 pt-8 border-t border-white/5"
+          className="flex justify-between items-center mt-20 pt-8 border-t border-white/5"
         >
           <Link
             href={`/horoscope/${prev.slug}`}
-            className="flex items-center gap-2 text-sm text-secondary hover:text-white transition-colors"
+            className="flex items-center gap-2 text-xs text-white/30 hover:text-white/60 transition-colors"
           >
             <span>←</span>
             <span>{prev.symbol} {prev.name}</span>
           </Link>
           <Link
             href={`/horoscope/${next.slug}`}
-            className="flex items-center gap-2 text-sm text-secondary hover:text-white transition-colors"
+            className="flex items-center gap-2 text-xs text-white/30 hover:text-white/60 transition-colors"
           >
             <span>{next.name} {next.symbol}</span>
             <span>→</span>

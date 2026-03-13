@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ScrollReveal from '@/components/ScrollReveal';
 
@@ -22,19 +22,16 @@ const zodiacSigns = [
 
 const features = [
   {
-    icon: '◎',
     title: 'Birth Chart',
     description: 'Your unique cosmic blueprint, calculated from the exact position of the planets at your moment of birth.',
     href: '/birth-chart',
   },
   {
-    icon: '✧',
     title: 'AI Astrologer',
     description: 'Ask Stella anything. Ancient wisdom meets your personal chart for tailored cosmic guidance.',
     href: '/chat',
   },
   {
-    icon: '⚯',
     title: 'Compatibility',
     description: 'Explore the cosmic chemistry between any two signs. Synastry analysis powered by real planetary data.',
     href: '/compatibility',
@@ -79,10 +76,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero — Minimal. Planetarium entrance. */}
+      {/* Hero */}
       <section className="relative flex flex-col items-center justify-center min-h-screen px-6 text-center">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,168,83,0.06)_0%,transparent_60%)]" />
-
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -90,32 +85,31 @@ export default function Home() {
           className="relative z-10 content-narrow"
         >
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 1 }}
-            className="text-hero mb-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 1.2 }}
+            className="text-hero mb-8 text-white/90"
           >
-            <span className="text-gradient-gold">Ask the Stars</span>
+            Ask the Stars
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8, duration: 0.8 }}
-            className="text-secondary text-body max-w-md mx-auto mb-12"
+            className="text-white/50 text-body max-w-md mx-auto mb-14"
           >
             Your personal cosmic guide, drawn from the actual positions of the planets.
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ delay: 1.2, duration: 0.6 }}
           >
             <a
               href="#signs"
-              className="inline-block px-8 py-4 bg-gold text-navy font-medium rounded-full text-sm tracking-wide hover:bg-gold-light transition-all duration-300 gold-glow"
-              data-sound="click"
+              className="btn-ghost inline-block"
             >
               What&apos;s your sign?
             </a>
@@ -131,37 +125,36 @@ export default function Home() {
         >
           <motion.div
             animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-            className="w-px h-12 bg-gradient-to-b from-gold/50 to-transparent"
+            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+            className="w-px h-12 bg-gradient-to-b from-white/20 to-transparent"
           />
         </motion.div>
       </section>
 
-      {/* Zodiac Signs — Click to reveal daily reading inline */}
-      <section id="signs" className="relative px-6 py-24">
+      {/* Zodiac Signs */}
+      <section id="signs" className="relative px-6 py-32 md:py-40">
         <div className="content-narrow">
           <ScrollReveal>
-            <p className="text-center text-tertiary text-xs uppercase tracking-[0.3em] mb-16">
+            <p className="text-center text-white/30 text-[10px] uppercase tracking-[0.3em] mb-16">
               Choose your sign
             </p>
           </ScrollReveal>
 
           <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
             {zodiacSigns.map((sign, i) => (
-              <ScrollReveal key={sign.slug} delay={i * 0.04}>
+              <ScrollReveal key={sign.slug} delay={i * 0.03}>
                 <button
                   onClick={() => handleSignClick(sign.slug)}
-                  className={`zodiac-glow flex flex-col items-center justify-center p-4 rounded-2xl aspect-square transition-all duration-300 cursor-pointer w-full ${
+                  className={`zodiac-glow flex flex-col items-center justify-center p-4 aspect-square transition-all duration-300 cursor-pointer w-full rounded-lg ${
                     selectedSign === sign.slug
-                      ? 'bg-gold/10 border border-gold/30'
-                      : 'glass-card'
+                      ? 'border border-gold/30 bg-white/[0.03]'
+                      : 'border border-transparent hover:border-white/10'
                   }`}
-                  data-sound="hover"
                 >
-                  <span className={`text-2xl sm:text-3xl mb-1.5 ${selectedSign === sign.slug ? 'zodiac-breathe' : ''}`}>
+                  <span className={`text-2xl sm:text-3xl mb-1.5 ${selectedSign === sign.slug ? 'text-gold' : 'text-white/60'}`}>
                     {sign.symbol}
                   </span>
-                  <span className={`text-[10px] sm:text-xs tracking-wide ${selectedSign === sign.slug ? 'text-gold' : 'text-secondary'}`}>
+                  <span className={`text-[10px] sm:text-xs tracking-wide ${selectedSign === sign.slug ? 'text-gold' : 'text-white/40'}`}>
                     {sign.name}
                   </span>
                 </button>
@@ -180,12 +173,12 @@ export default function Home() {
                 transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
                 className="overflow-hidden"
               >
-                <div className="glass-card p-8 border border-gold/10">
+                <div className="glass-card p-8">
                   <div className="flex items-center gap-3 mb-4">
-                    <span className="text-2xl zodiac-breathe">{selectedSignData.symbol}</span>
+                    <span className="text-2xl">{selectedSignData.symbol}</span>
                     <div>
-                      <h3 className="text-sm font-medium text-primary">{selectedSignData.name}</h3>
-                      <p className="text-[10px] text-tertiary">Today&apos;s Reading</p>
+                      <h3 className="text-sm text-white/90">{selectedSignData.name}</h3>
+                      <p className="text-[10px] text-white/30 uppercase tracking-wider">Today&apos;s Reading</p>
                     </div>
                   </div>
 
@@ -201,16 +194,16 @@ export default function Home() {
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.4 }}
                     >
-                      <p className="text-secondary text-sm leading-relaxed font-light mb-4">
+                      <p className="text-white/70 text-sm leading-relaxed font-light mb-4">
                         {reading.reading}
                       </p>
-                      <div className="flex items-center gap-4 text-[11px] text-tertiary">
-                        <span>Mood: <span className="text-gold">{reading.mood}</span></span>
-                        <span>Lucky #: <span className="text-gold">{reading.lucky_number}</span></span>
+                      <div className="flex items-center gap-4 text-[11px] text-white/30">
+                        <span>Mood: <span className="text-white/50">{reading.mood}</span></span>
+                        <span>Lucky #: <span className="text-white/50">{reading.lucky_number}</span></span>
                       </div>
                     </motion.div>
                   ) : (
-                    <p className="text-tertiary text-sm font-light">The stars are being consulted...</p>
+                    <p className="text-white/30 text-sm font-light">The stars are being consulted...</p>
                   )}
 
                   <div className="mt-5 pt-4 border-t border-white/5">
@@ -228,35 +221,28 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features — Fade in one by one on scroll */}
-      <section className="relative px-6 py-24">
+      {/* Features — text only, no cards */}
+      <section className="relative px-6 py-32 md:py-40">
         <div className="content-narrow">
           <ScrollReveal>
-            <p className="text-center text-tertiary text-xs uppercase tracking-[0.3em] mb-4">
+            <p className="text-center text-white/30 text-[10px] uppercase tracking-[0.3em] mb-4">
               What we offer
             </p>
-            <h2 className="text-section text-center mb-16">
+            <h2 className="text-section text-center text-white/90 mb-20">
               The cosmos, decoded
             </h2>
           </ScrollReveal>
 
-          <div className="space-y-4">
+          <div className="space-y-16">
             {features.map((feature, i) => (
-              <ScrollReveal key={feature.title} delay={i * 0.12}>
-                <Link href={feature.href} className="glass-card block p-8 group transition-all duration-300">
-                  <div className="flex items-start gap-5">
-                    <span className="text-2xl text-gold/60 group-hover:text-gold transition-colors shrink-0 mt-0.5">
-                      {feature.icon}
-                    </span>
-                    <div>
-                      <h3 className="text-base font-medium mb-2 group-hover:text-gold transition-colors">
-                        {feature.title}
-                      </h3>
-                      <p className="text-sm text-secondary leading-relaxed font-light">
-                        {feature.description}
-                      </p>
-                    </div>
-                  </div>
+              <ScrollReveal key={feature.title} delay={i * 0.1}>
+                <Link href={feature.href} className="block group">
+                  <h3 className="text-base font-heading tracking-wide mb-3 text-white/70 group-hover:text-gold transition-colors">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm text-white/40 leading-relaxed font-light max-w-lg">
+                    {feature.description}
+                  </p>
                 </Link>
               </ScrollReveal>
             ))}
@@ -264,21 +250,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA — Minimal */}
-      <section className="relative px-6 py-32 text-center">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,168,83,0.04)_0%,transparent_50%)]" />
+      {/* CTA */}
+      <section className="relative px-6 py-32 md:py-40 text-center">
         <ScrollReveal className="relative z-10 content-narrow">
-          <h2 className="text-section mb-6">
-            Discover your
-            <br />
-            <span className="text-gradient-gold">cosmic blueprint</span>
+          <h2 className="text-section text-white/90 mb-6">
+            Discover your cosmic blueprint
           </h2>
-          <p className="text-secondary text-body mb-10">
+          <p className="text-white/50 text-body mb-12">
             Enter your birth details for a personalized AI reading.
           </p>
           <Link
             href="/birth-chart"
-            className="inline-block px-10 py-4 bg-gold text-navy font-medium rounded-full text-sm tracking-wide hover:bg-gold-light transition-all duration-300 gold-glow"
+            className="btn-ghost inline-block"
           >
             Start Your Free Reading
           </Link>

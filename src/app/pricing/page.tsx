@@ -30,7 +30,7 @@ const plans = [
       'Full birth chart analysis',
       'Detailed compatibility readings',
     ],
-    cta: 'Subscribe to Star ✦',
+    cta: 'Subscribe to Star',
     highlighted: true,
   },
   {
@@ -45,7 +45,7 @@ const plans = [
       'Monthly forecast reports',
       'Priority access to new features',
     ],
-    cta: 'Go Cosmic ✦',
+    cta: 'Go Cosmic',
     highlighted: false,
   },
 ];
@@ -79,16 +79,16 @@ export default function PricingPage() {
     <div className="min-h-screen pt-28 pb-20 px-6">
       <div className="max-w-4xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-20"
         >
-          <p className="text-xs uppercase tracking-[0.3em] text-gold/60 mb-4">Pricing</p>
-          <h1 className="text-4xl md:text-5xl font-light tracking-tight mb-4">
-            Unlock the <span className="text-gradient-gold">full cosmos</span>
+          <p className="text-[10px] uppercase tracking-[0.3em] text-white/30 mb-4">Pricing</p>
+          <h1 className="text-section text-white/90 mb-4">
+            Unlock the full cosmos
           </h1>
-          <p className="text-white-muted font-light max-w-md mx-auto">
+          <p className="text-white/50 font-light max-w-md mx-auto text-sm">
             Start free, upgrade when you&apos;re ready. Cancel anytime.
           </p>
         </motion.div>
@@ -97,31 +97,31 @@ export default function PricingPage() {
           {plans.map((plan, i) => (
             <motion.div
               key={plan.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ delay: 0.1 * i, duration: 0.6 }}
-              className={`glass-card p-8 relative ${
-                plan.highlighted ? 'border border-gold/20 shadow-[0_0_30px_rgba(212,168,83,0.1)]' : ''
+              className={`p-8 relative border ${
+                plan.highlighted ? 'border-white/15' : 'border-white/[0.08]'
               }`}
             >
               {plan.highlighted && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-navy text-[10px] font-medium px-4 py-1 rounded-full uppercase tracking-wider">
+                <p className="absolute -top-3 left-1/2 -translate-x-1/2 text-gold text-[10px] uppercase tracking-[0.2em] bg-black px-3">
                   Most Popular
-                </div>
+                </p>
               )}
 
-              <div className="text-center mb-8">
-                <h3 className="text-lg font-medium mb-2">{plan.name}</h3>
+              <div className="text-center mb-10">
+                <h3 className="text-base font-heading mb-3 text-white/80">{plan.name}</h3>
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-3xl font-light text-gradient-gold">{plan.price}</span>
-                  <span className="text-sm text-white-dim">{plan.period}</span>
+                  <span className="text-2xl font-heading font-light text-white/90">{plan.price}</span>
+                  <span className="text-xs text-white/30">{plan.period}</span>
                 </div>
               </div>
 
-              <ul className="space-y-3 mb-8">
+              <ul className="space-y-3 mb-10">
                 {plan.features.map((f) => (
-                  <li key={f} className="flex items-start gap-3 text-sm text-white-muted font-light">
-                    <span className="text-gold/50 mt-0.5 shrink-0">✦</span>
+                  <li key={f} className="flex items-start gap-3 text-sm text-white/50 font-light">
+                    <span className="text-white/20 mt-0.5 shrink-0">✓</span>
                     {f}
                   </li>
                 ))}
@@ -131,10 +131,8 @@ export default function PricingPage() {
                 <button
                   onClick={() => handleSubscribe(plan.planKey!)}
                   disabled={loading === plan.planKey}
-                  className={`w-full py-3 rounded-full text-sm font-medium transition-all duration-300 ${
-                    plan.highlighted
-                      ? 'bg-gold text-navy hover:bg-gold-light gold-glow'
-                      : 'bg-gold/10 text-gold border border-gold/20 hover:bg-gold/20'
+                  className={`w-full cursor-pointer ${
+                    plan.highlighted ? 'btn-primary' : 'btn-ghost'
                   } disabled:opacity-50`}
                 >
                   {loading === plan.planKey ? 'Redirecting...' : plan.cta}
@@ -142,7 +140,7 @@ export default function PricingPage() {
               ) : (
                 <a
                   href={plan.href}
-                  className="block w-full py-3 rounded-full text-sm font-medium text-center bg-white/5 text-white-muted border border-white/10 hover:bg-white/10 transition-all duration-300"
+                  className="block w-full text-center btn-ghost"
                 >
                   {plan.cta}
                 </a>
@@ -155,7 +153,7 @@ export default function PricingPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="text-center text-[11px] text-white-dim mt-8"
+          className="text-center text-[10px] text-white/20 mt-10"
         >
           All plans include a 7-day money-back guarantee. Cancel anytime from your account.
         </motion.p>
