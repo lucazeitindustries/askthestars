@@ -19,9 +19,16 @@ declare global {
 
 const MIXPANEL_TOKEN = process.env.NEXT_PUBLIC_MIXPANEL_TOKEN;
 
-export function trackEvent(event: string, props?: Record<string, unknown>) {
+export function mpTrack(event: string, props?: Record<string, unknown>) {
   if (typeof window !== 'undefined' && window.mixpanel) {
     window.mixpanel.track(event, props);
+  }
+}
+
+export function mpIdentify(id: string, props?: Record<string, unknown>) {
+  if (typeof window !== 'undefined' && window.mixpanel) {
+    window.mixpanel.identify(id);
+    if (props) window.mixpanel.people.set(props);
   }
 }
 

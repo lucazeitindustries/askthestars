@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MetaPixel, { trackEvent } from '@/components/MetaPixel';
+import { mpTrack, mpIdentify } from '@/components/Analytics';
 import FloatingIllustration, { cdnUrl } from '@/components/FloatingIllustration';
 import PaymentForm from '@/components/PaymentForm';
 
@@ -220,6 +221,8 @@ export default function QuizPage() {
   const goForward = useCallback((nextIndex: number) => {
     setDirection(1);
     setStepIndex(nextIndex);
+    const step = STEPS[nextIndex];
+    if (step) mpTrack('quiz_step_viewed', { step_index: nextIndex, step_id: step.id, step_type: step.type });
   }, []);
 
   const goBack = useCallback(() => {
@@ -239,11 +242,13 @@ export default function QuizPage() {
     const firstAction = STEPS.findIndex((s) => s.type === 'action');
     setDirection(1);
     setStepIndex(firstAction);
-  }, []);
+    mpTrack('quiz_intros_skipped', { skipped_from_step: stepIndex });
+  }, [stepIndex]);
 
   const handleFocusSelect = (area: FocusArea) => {
     setState((s) => ({ ...s, focusArea: area }));
     trackEvent('ViewContent', { content_name: area });
+    mpTrack('quiz_focus_selected', { focus_area: area, step: 3 });
     // Go to splash-focus step
     goForward(4);
   };
@@ -264,6 +269,7 @@ export default function QuizPage() {
 
     setState((s) => ({ ...s, error: '', loading: true }));
     trackEvent('Lead');
+    mpTrack('quiz_birthdate_submitted', { birth_year: y, focus_area: state.focusArea, step: 5 });
     // Go to splash-analyzing step
     goForward(6);
 
@@ -341,6 +347,8 @@ export default function QuizPage() {
         return;
       }
       trackEvent('CompleteRegistration');
+      mpTrack('quiz_email_submitted', { email: state.email, sign: state.sign, focus_area: state.focusArea, step: 9 });
+      mpIdentify(state.email, { sign: state.sign, focus_area: state.focusArea, $email: state.email });
       setState((s) => ({ ...s, loading: false }));
       goForward(10);
     } catch {
@@ -350,6 +358,7 @@ export default function QuizPage() {
 
   const handleSelectPlan = async (plan: 'star' | 'cosmic') => {
     trackEvent('InitiateCheckout', { content_name: plan, value: plan === 'star' ? 9.99 : 19.99, currency: 'USD' });
+    mpTrack('quiz_plan_selected', { plan, value: plan === 'star' ? 9.99 : 19.99, step: 11 });
     setSelectedPlan(plan);
     setPaymentLoading(true);
     setClientSecret(null);
@@ -388,6 +397,7 @@ export default function QuizPage() {
       value: selectedPlan === 'star' ? 9.99 : 19.99,
       currency: 'USD',
     });
+    mpTrack('quiz_purchase_complete', { plan: selectedPlan, value: selectedPlan === 'star' ? 9.99 : 19.99, currency: 'USD' });
     window.location.href = '/quiz/success';
   };
 
