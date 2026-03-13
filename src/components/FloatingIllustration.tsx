@@ -1,7 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
-
 const CDN_BASE = 'https://askthestars-assets.b-cdn.net';
 
 interface FloatingIllustrationProps {
@@ -29,10 +27,7 @@ export default function FloatingIllustration({
     : src;
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 1, ease: 'easeOut' }}
+    <div
       className={`flex justify-center ${className}`}
       style={{ mixBlendMode: blendMode }}
     >
@@ -45,6 +40,6 @@ export default function FloatingIllustration({
         loading="lazy"
         style={{ opacity, width: '100%', maxWidth: width, height: 'auto' }}
       />
-    </motion.div>
+    </div>
   );
 }

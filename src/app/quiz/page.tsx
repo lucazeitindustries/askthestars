@@ -68,19 +68,29 @@ const FOCUS_OPTIONS: { key: FocusArea; label: string; sub: string }[] = [
   { key: 'growth', label: 'Personal Growth', sub: 'Self-discovery & transformation' },
 ];
 
+// Static arrays — no need to recreate every render
+const days = Array.from({ length: 31 }, (_, i) => i + 1);
+const years = Array.from({ length: 93 }, (_, i) => 2012 - i);
+
 const slideVariants = {
   enter: (direction: number) => ({
-    x: direction > 0 ? '100%' : '-100%',
+    x: direction > 0 ? 40 : -40,
     opacity: 0,
+    willChange: 'transform' as const,
   }),
   center: {
     x: 0,
     opacity: 1,
   },
   exit: (direction: number) => ({
-    x: direction > 0 ? '-100%' : '100%',
+    x: direction > 0 ? -40 : 40,
     opacity: 0,
   }),
+};
+
+const slideTransition = {
+  duration: 0.25,
+  ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number],
 };
 
 export default function QuizPage() {
@@ -294,9 +304,6 @@ export default function QuizPage() {
     }
   };
 
-  const days = Array.from({ length: 31 }, (_, i) => i + 1);
-  const years = Array.from({ length: 93 }, (_, i) => 2012 - i);
-
   // Count teaser insights (sentences in teaser text)
   const insightCount = state.teaser ? state.teaser.split(/[.!?]+/).filter(Boolean).length : 0;
 
@@ -350,15 +357,10 @@ export default function QuizPage() {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              transition={slideTransition}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1, duration: 0.6 }}
-                className="text-center"
-              >
+              <div className="text-center">
                 <FloatingIllustration
                   src="/illustrations/hero-eclipse.png"
                   alt="Celestial eclipse"
@@ -376,17 +378,14 @@ export default function QuizPage() {
                 <p className="text-white/35 text-sm mt-4 italic">
                   Not generic horoscopes — readings based on YOUR exact birth chart.
                 </p>
-              </motion.div>
+              </div>
 
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5, duration: 0.4 }}
+              <button
                 onClick={() => goForward(1)}
                 className="mt-12 btn-ghost px-10 py-3 text-[0.95rem] cursor-pointer"
               >
                 Next
-              </motion.button>
+              </button>
             </motion.div>
           )}
 
@@ -399,7 +398,7 @@ export default function QuizPage() {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              transition={slideTransition}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
               {showBackButton && (
@@ -410,12 +409,7 @@ export default function QuizPage() {
                 </button>
               )}
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1, duration: 0.6 }}
-                className="text-center"
-              >
+              <div className="text-center">
                 <FloatingIllustration
                   src="/illustrations/moon-phases.png"
                   alt="Moon phases"
@@ -434,29 +428,23 @@ export default function QuizPage() {
                     'Compatibility analysis with real astrological data',
                     'A personal astrologer available 24/7',
                   ].map((item, i) => (
-                    <motion.div
+                    <div
                       key={i}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.3 + i * 0.12, duration: 0.4 }}
                       className="flex items-start gap-3"
                     >
                       <span className="text-gold/70 text-sm mt-0.5 shrink-0">✦</span>
                       <span className="text-white/55 text-[0.95rem] font-light leading-relaxed">{item}</span>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8, duration: 0.4 }}
+              <button
                 onClick={() => goForward(2)}
                 className="mt-12 btn-ghost px-10 py-3 text-[0.95rem] cursor-pointer"
               >
                 Next
-              </motion.button>
+              </button>
             </motion.div>
           )}
 
@@ -469,7 +457,7 @@ export default function QuizPage() {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              transition={slideTransition}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
               {showBackButton && (
@@ -480,12 +468,7 @@ export default function QuizPage() {
                 </button>
               )}
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1, duration: 0.6 }}
-                className="text-center"
-              >
+              <div className="text-center">
                 <FloatingIllustration
                   src="/illustrations/stella-chat-illustration.png"
                   alt="Cosmic eye"
@@ -500,17 +483,14 @@ export default function QuizPage() {
                 <p className="text-white/45 text-[0.95rem] font-light max-w-[300px] mx-auto leading-relaxed">
                   Answer two quick questions and we&apos;ll decode your cosmic blueprint.
                 </p>
-              </motion.div>
+              </div>
 
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.4 }}
+              <button
                 onClick={() => goForward(3)}
                 className="mt-12 btn-primary px-10 py-3.5 text-[0.95rem] cursor-pointer"
               >
                 Let&apos;s go
-              </motion.button>
+              </button>
             </motion.div>
           )}
 
@@ -523,7 +503,7 @@ export default function QuizPage() {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              transition={slideTransition}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
               {showBackButton && (
@@ -534,12 +514,7 @@ export default function QuizPage() {
                 </button>
               )}
 
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.1, duration: 0.5 }}
-                className="text-center mb-10"
-              >
+              <div className="text-center mb-10">
                 <FloatingIllustration
                   src="/illustrations/hero-eclipse.png"
                   alt="Celestial eclipse"
@@ -552,15 +527,12 @@ export default function QuizPage() {
                   What do the stars have in store for you?
                 </h1>
                 <p className="text-white/40 text-sm">Choose what matters most right now</p>
-              </motion.div>
+              </div>
 
               <div className="w-full space-y-3">
-                {FOCUS_OPTIONS.map((opt, i) => (
-                  <motion.button
+                {FOCUS_OPTIONS.map((opt) => (
+                  <button
                     key={opt.key}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 + i * 0.1, duration: 0.4 }}
                     onClick={() => handleFocusSelect(opt.key)}
                     className="w-full p-5 flex items-center gap-4 text-left group cursor-pointer
                                border border-white/10 hover:border-gold/30 active:scale-[0.98] transition-all duration-200"
@@ -574,7 +546,7 @@ export default function QuizPage() {
                     <svg className="w-4 h-4 text-white/20 group-hover:text-gold transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
                     </svg>
-                  </motion.button>
+                  </button>
                 ))}
               </div>
             </motion.div>
@@ -589,27 +561,17 @@ export default function QuizPage() {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              transition={slideTransition}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, ease: 'easeOut' }}
-                className="text-center"
-              >
+              <div className="text-center">
                 <h1 className="text-[clamp(2rem,6vw,2.75rem)] font-heading font-light leading-[1.2] text-white/90 mb-3">
                   Great choice. <span className="text-gold">✦</span>
                 </h1>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4, duration: 0.5 }}
-                  className="text-white/40 text-[0.95rem] font-light"
-                >
+                <p className="text-white/40 text-[0.95rem] font-light">
                   Now let&apos;s find your stars.
-                </motion.p>
-              </motion.div>
+                </p>
+              </div>
             </motion.div>
           )}
 
@@ -622,7 +584,7 @@ export default function QuizPage() {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              transition={slideTransition}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
               {showBackButton && (
@@ -633,12 +595,7 @@ export default function QuizPage() {
                 </button>
               )}
 
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.1, duration: 0.5 }}
-                className="text-center mb-8"
-              >
+              <div className="text-center mb-8">
                 <FloatingIllustration
                   src="/illustrations/moon-phases.png"
                   alt="Moon phases"
@@ -651,14 +608,9 @@ export default function QuizPage() {
                   When were you born?
                 </h1>
                 <p className="text-white/40 text-sm">Your birth date reveals your cosmic blueprint</p>
-              </motion.div>
+              </div>
 
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-                className="w-full space-y-4"
-              >
+              <div className="w-full space-y-4">
                 <div className="grid grid-cols-3 gap-3">
                   <select
                     value={state.birthMonth}
@@ -728,7 +680,7 @@ export default function QuizPage() {
                 >
                   Reveal My Reading
                 </button>
-              </motion.div>
+              </div>
             </motion.div>
           )}
 
@@ -741,7 +693,7 @@ export default function QuizPage() {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              transition={slideTransition}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
               <LoadingAnimation />
@@ -757,7 +709,7 @@ export default function QuizPage() {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              transition={slideTransition}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
               {showBackButton && (
@@ -768,12 +720,7 @@ export default function QuizPage() {
                 </button>
               )}
 
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8 }}
-                className="w-full"
-              >
+              <div className="w-full">
                 <div className="text-center mb-8">
                   <FloatingIllustration
                     src={`/illustrations/zodiac-${state.sign.toLowerCase()}.png`}
@@ -827,7 +774,7 @@ export default function QuizPage() {
                 >
                   Unlock Your Full Reading
                 </button>
-              </motion.div>
+              </div>
             </motion.div>
           )}
 
@@ -840,7 +787,7 @@ export default function QuizPage() {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              transition={slideTransition}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
               {showBackButton && (
@@ -851,12 +798,7 @@ export default function QuizPage() {
                 </button>
               )}
 
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.1, duration: 0.5 }}
-                className="text-center mb-8"
-              >
+              <div className="text-center mb-8">
                 <FloatingIllustration
                   src="/illustrations/stella-chat-illustration.png"
                   alt="Cosmic eye"
@@ -872,14 +814,9 @@ export default function QuizPage() {
                 <p className="text-white/20 text-xs mt-2">
                   Join 10,000+ people who start their day with the stars
                 </p>
-              </motion.div>
+              </div>
 
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-                className="w-full space-y-4"
-              >
+              <div className="w-full space-y-4">
                 <input
                   type="email"
                   value={state.email}
@@ -905,7 +842,7 @@ export default function QuizPage() {
                 <p className="text-white/20 text-xs text-center">
                   No spam, ever. Unsubscribe anytime.
                 </p>
-              </motion.div>
+              </div>
             </motion.div>
           )}
 
@@ -918,7 +855,7 @@ export default function QuizPage() {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              transition={slideTransition}
               className="flex flex-col items-center py-8 min-h-[calc(100dvh-100px)]"
             >
               {showBackButton && (
@@ -929,12 +866,7 @@ export default function QuizPage() {
                 </button>
               )}
 
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.1, duration: 0.5 }}
-                className="text-center mb-6"
-              >
+              <div className="text-center mb-6">
                 <FloatingIllustration
                   src={`/illustrations/zodiac-${state.sign.toLowerCase()}.png`}
                   alt={`${state.sign} zodiac illustration`}
@@ -946,29 +878,19 @@ export default function QuizPage() {
                 <h2 className="text-[clamp(1.25rem,4vw,1.75rem)] font-heading font-light text-white/90">
                   Your {state.sign} Reading
                 </h2>
-              </motion.div>
+              </div>
 
               {/* Full reading */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-                className="glass-card p-6 mb-6 w-full"
-              >
+              <div className="glass-card p-6 mb-6 w-full">
                 {state.fullReading.split('\n\n').map((para, i) => (
                   <p key={i} className="text-white/70 leading-relaxed text-[0.95rem] font-light mb-4 last:mb-0">
                     {para}
                   </p>
                 ))}
-              </motion.div>
+              </div>
 
               {/* Locked sections */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
-                className="w-full space-y-2 mb-6"
-              >
+              <div className="w-full space-y-2 mb-6">
                 <p className="text-white/30 text-sm text-center mb-3">Unlock your complete cosmic profile:</p>
                 {[
                   'Detailed Love Forecast',
@@ -982,26 +904,18 @@ export default function QuizPage() {
                     <span className="text-white/40 text-sm">{item}</span>
                   </div>
                 ))}
-              </motion.div>
+              </div>
 
               {/* Pricing CTA */}
               {!showPricing ? (
-                <motion.button
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.6, duration: 0.5 }}
+                <button
                   onClick={() => setShowPricing(true)}
                   className="w-full btn-primary py-4 text-[1rem] cursor-pointer"
                 >
                   Unlock Everything
-                </motion.button>
+                </button>
               ) : (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                  className="w-full space-y-3"
-                >
+                <div className="w-full space-y-3">
                   {/* Star plan */}
                   <div className="p-5 relative border border-white/15 hover:border-gold/30 transition-all">
                     <p className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-gold text-[9px] uppercase tracking-[0.15em] bg-black px-2">
@@ -1055,7 +969,7 @@ export default function QuizPage() {
                   {state.error && (
                     <p className="text-red-400/80 text-sm text-center">{state.error}</p>
                   )}
-                </motion.div>
+                </div>
               )}
 
               <p className="text-white/20 text-xs text-center mt-4">
