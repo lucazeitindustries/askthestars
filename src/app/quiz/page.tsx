@@ -33,7 +33,7 @@ interface StepConfig {
   id: string;
 }
 
-// 12-step flow: 3 intros, 7 action steps, 2 splash steps
+// 13-step flow: 3 intros, 8 action steps, 2 splash steps
 const STEPS: StepConfig[] = [
   { type: 'intro', id: 'intro-1' },      // 0
   { type: 'intro', id: 'intro-2' },      // 1
@@ -42,12 +42,57 @@ const STEPS: StepConfig[] = [
   { type: 'splash', id: 'splash-focus' },// 4
   { type: 'action', id: 'birthdate' },   // 5
   { type: 'splash', id: 'splash-analyzing' }, // 6
-  { type: 'action', id: 'teaser' },      // 7
-  { type: 'action', id: 'email' },       // 8
-  { type: 'action', id: 'reading' },     // 9
-  { type: 'action', id: 'offer' },       // 10
-  { type: 'action', id: 'payment' },     // 11
+  { type: 'action', id: 'cosmic-dna' },  // 7 — NEW
+  { type: 'action', id: 'teaser' },      // 8
+  { type: 'action', id: 'email' },       // 9
+  { type: 'action', id: 'reading' },     // 10
+  { type: 'action', id: 'offer' },       // 11
+  { type: 'action', id: 'payment' },     // 12
 ];
+
+// Sign-specific traits and personal lines for the Cosmic DNA reveal
+const SIGN_DATA: Record<string, { traits: string; personal: string }> = {
+  Aries:       { traits: 'Bold. Fearless. Born to lead.',               personal: "You've always known you were meant for something big." },
+  Taurus:      { traits: 'Grounded. Loyal. Deeply sensual.',            personal: 'You give everything to the people you love — sometimes too much.' },
+  Gemini:      { traits: 'Curious. Magnetic. Endlessly evolving.',      personal: 'People underestimate the depth beneath your lightness.' },
+  Cancer:      { traits: 'Intuitive. Nurturing. Emotionally fearless.', personal: "You feel everything — and that's your superpower, not your weakness." },
+  Leo:         { traits: 'Radiant. Generous. Unapologetically bold.',   personal: 'You light up every room, but few see the vulnerability beneath the confidence.' },
+  Virgo:       { traits: 'Precise. Thoughtful. Quietly powerful.',      personal: 'You hold everything together for everyone — who holds it together for you?' },
+  Libra:       { traits: 'Graceful. Diplomatic. Deeply romantic.',      personal: 'You crave balance, but your heart wants to feel everything at full volume.' },
+  Scorpio:     { traits: 'Intense. Perceptive. Fiercely loyal.',        personal: "You've been told you're 'too much' — the stars say you're exactly enough." },
+  Sagittarius: { traits: 'Adventurous. Honest. Wildly free.',           personal: "You're not running from something — you're running toward who you're meant to be." },
+  Capricorn:   { traits: 'Ambitious. Resilient. Quietly unstoppable.',  personal: 'You carry more than anyone realizes — and you make it look effortless.' },
+  Aquarius:    { traits: 'Visionary. Independent. Beautifully different.', personal: "You've never fit in — because you were born to stand out." },
+  Pisces:      { traits: 'Dreamy. Empathic. Profoundly creative.',      personal: "You feel the world's pain as your own — that sensitivity is rare and sacred." },
+};
+
+// Mars transit house mapping by sign
+const TRANSIT_HOUSE: Record<string, string> = {
+  Aries: '1st', Taurus: '2nd', Gemini: '3rd', Cancer: '4th',
+  Leo: '5th', Virgo: '6th', Libra: '7th', Scorpio: '8th',
+  Sagittarius: '9th', Capricorn: '10th', Aquarius: '11th', Pisces: '12th',
+};
+
+// Focus area descriptions for transit hook
+const FOCUS_DESCRIPTIONS: Record<FocusArea, string> = {
+  love: 'relationships and connection',
+  career: 'ambition and purpose',
+  growth: 'personal transformation',
+};
+
+// Emotional mirror lines for email capture
+const EMAIL_EMOTIONAL: Record<FocusArea, string> = {
+  love: "You're searching for something real. The stars see it too.",
+  career: 'You know you\'re meant for more. Your chart confirms it.',
+  growth: "The fact that you're here means you're already evolving.",
+};
+
+// Cliffhanger lines for reading step
+const READING_CLIFFHANGER: Record<FocusArea, string> = {
+  love: '...and there\'s one more thing your chart reveals about love that changes everything. →',
+  career: '...and there\'s a career shift in your chart that you need to know about. →',
+  growth: '...and your chart holds a secret about your purpose that few [SIGN]s ever discover. →',
+};
 
 // Map action steps to progress dot indices (0-4)
 const ACTION_STEP_INDICES = STEPS
@@ -254,7 +299,7 @@ export default function QuizPage() {
         fullReading: reading.fullReading || '',
         loading: false,
       }));
-      // Auto-advance to teaser step
+      // Auto-advance to cosmic-dna step
       goForward(7);
     } catch {
       setState((s) => ({
@@ -297,7 +342,7 @@ export default function QuizPage() {
       }
       trackEvent('CompleteRegistration');
       setState((s) => ({ ...s, loading: false }));
-      goForward(9);
+      goForward(10);
     } catch {
       setState((s) => ({ ...s, error: 'Something went wrong. Please try again.', loading: false }));
     }
@@ -311,7 +356,7 @@ export default function QuizPage() {
     setState((s) => ({ ...s, error: '' }));
 
     // Advance to payment step immediately (shows loading state)
-    goForward(11);
+    goForward(12);
 
     try {
       const res = await fetch('/api/stripe/create-subscription', {
@@ -326,12 +371,12 @@ export default function QuizPage() {
         setState((s) => ({ ...s, error: data.error || 'Unable to set up payment' }));
         setSelectedPlan(null);
         // Go back to offer page on error
-        goForward(10);
+        goForward(11);
       }
     } catch {
       setState((s) => ({ ...s, error: 'Unable to start checkout. Please try again.' }));
       setSelectedPlan(null);
-      goForward(10);
+      goForward(11);
     } finally {
       setPaymentLoading(false);
     }
@@ -352,7 +397,7 @@ export default function QuizPage() {
     setState((s) => ({ ...s, error: '' }));
     // Go back to offer page
     setDirection(-1);
-    setStepIndex(10);
+    setStepIndex(11);
   };
 
   // Count teaser insights (sentences in teaser text)
@@ -752,6 +797,84 @@ export default function QuizPage() {
             </motion.div>
           )}
 
+          {/* ===== STEP 7: Cosmic DNA Reveal ===== */}
+          {currentStep.id === 'cosmic-dna' && (() => {
+            const signData = SIGN_DATA[state.sign] || SIGN_DATA.Aries;
+            const traits = signData.traits.split('. ').map(t => t.replace(/\.$/, ''));
+            return (
+            <motion.div
+              key="cosmic-dna"
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={slideTransition}
+              className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
+            >
+              <style>{`
+                @keyframes cosmicFadeInUp {
+                  from { opacity: 0; transform: translateY(16px); }
+                  to   { opacity: 1; transform: translateY(0); }
+                }
+                .cosmic-fade { opacity: 0; animation: cosmicFadeInUp 0.7s ease-out forwards; }
+              `}</style>
+
+              <div className="text-center max-w-[360px] mx-auto">
+                {/* Sign illustration */}
+                <div className="cosmic-fade" style={{ animationDelay: '0s' }}>
+                  <FloatingIllustration
+                    src={`/illustrations/zodiac-${state.sign.toLowerCase()}.webp`}
+                    alt={`${state.sign} zodiac`}
+                    width={130}
+                    height={130}
+                    opacity={0.7}
+                    className="mb-6"
+                  />
+                </div>
+
+                {/* Sign name */}
+                <h1
+                  className="cosmic-fade text-[clamp(2rem,6vw,2.75rem)] font-heading font-light text-white/90 mb-6"
+                  style={{ animationDelay: '0.4s' }}
+                >
+                  You&apos;re a {state.sign}…
+                </h1>
+
+                {/* Traits — one at a time */}
+                <div className="space-y-2 mb-8">
+                  {traits.map((trait, i) => (
+                    <p
+                      key={i}
+                      className="cosmic-fade text-gold/80 text-[1.15rem] font-heading font-light tracking-wide"
+                      style={{ animationDelay: `${1.0 + i * 0.8}s` }}
+                    >
+                      {trait}.
+                    </p>
+                  ))}
+                </div>
+
+                {/* Personal line */}
+                <p
+                  className="cosmic-fade text-white/60 text-[1rem] leading-relaxed italic font-light"
+                  style={{ animationDelay: `${1.0 + traits.length * 0.8 + 0.6}s` }}
+                >
+                  &ldquo;{signData.personal}&rdquo;
+                </p>
+
+                {/* Continue button — appears after full animation */}
+                <button
+                  onClick={() => goForward(8)}
+                  className="cosmic-fade mt-10 btn-ghost px-10 py-3 text-[0.95rem] cursor-pointer text-white/40 hover:text-white/70 transition-colors"
+                  style={{ animationDelay: `${1.0 + traits.length * 0.8 + 1.8}s` }}
+                >
+                  Continue
+                </button>
+              </div>
+            </motion.div>
+            );
+          })()}
+
           {/* ===== STEP 8: Teaser Reading ===== */}
           {currentStep.id === 'teaser' && (
             <motion.div
@@ -795,6 +918,13 @@ export default function QuizPage() {
                   )}
                 </div>
 
+                {/* Transit hook */}
+                {state.focusArea && (
+                  <p className="text-gold/50 text-sm text-center mb-6 font-light italic">
+                    Mars is currently transiting your {TRANSIT_HOUSE[state.sign] || '1st'} house — here&apos;s what that means for your {FOCUS_DESCRIPTIONS[state.focusArea]}.
+                  </p>
+                )}
+
                 {/* Teaser reading */}
                 <div className="glass-card p-6 mb-4">
                   <p className="text-white/70 leading-relaxed text-[0.95rem] font-light">
@@ -802,26 +932,25 @@ export default function QuizPage() {
                   </p>
                 </div>
 
-                {/* Blurred preview */}
-                <div className="relative glass-card p-6 mb-8">
-                  <p className="text-white/70 leading-relaxed text-[0.95rem] blur-[6px] select-none" aria-hidden>
-                    The coming weeks bring extraordinary planetary alignments that directly impact your path.
-                    A rare conjunction between Venus and Jupiter in your fifth house creates an opening for
-                    profound connection and creative breakthrough. Meanwhile, Saturn&apos;s transit through your
-                    tenth house suggests that career ambitions...
-                  </p>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="border border-white/10 px-4 py-2 flex items-center gap-2 bg-black/50">
-                      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.5)">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                      <span className="text-white/50 text-sm">Full reading locked</span>
+                {/* Specific locked insights */}
+                <div className="space-y-3 mb-8">
+                  {[
+                    `🔒 Why ${new Date().toLocaleString('en-US', { month: 'long' })} 17-23 is your luckiest week this year`,
+                    state.focusArea === 'love'
+                      ? '🔒 The 3 signs you should never date (and the 1 that\'s your soulmate)'
+                      : state.focusArea === 'career'
+                        ? '🔒 The career move your chart says to make before June'
+                        : '🔒 What your Saturn return reveals about 2026',
+                    `🔒 The hidden talent in your birth chart most ${state.sign}s never discover`,
+                  ].map((label, i) => (
+                    <div key={i} className="glass-card px-5 py-3.5 flex items-center gap-3 opacity-60">
+                      <span className="text-white/40 text-sm font-light">{label}</span>
                     </div>
-                  </div>
+                  ))}
                 </div>
 
                 <button
-                  onClick={() => goForward(8)}
+                  onClick={() => goForward(9)}
                   className="w-full btn-primary py-4 text-[1rem] cursor-pointer"
                 >
                   Unlock Your Full Reading
@@ -863,7 +992,9 @@ export default function QuizPage() {
                 <h1 className="text-[clamp(1.5rem,4.5vw,2rem)] font-heading font-light leading-tight mb-2 text-white/90">
                   Where should we send your daily readings?
                 </h1>
-                <p className="text-white/30 text-sm">Plus a personalized daily horoscope every morning</p>
+                <p className="text-white/40 text-sm italic font-light">
+                  {state.focusArea ? EMAIL_EMOTIONAL[state.focusArea] : 'Plus a personalized daily horoscope every morning'}
+                </p>
                 <p className="text-white/20 text-xs mt-2">
                   Join 10,000+ people who start their day with the stars
                 </p>
@@ -944,13 +1075,15 @@ export default function QuizPage() {
                 ))}
               </div>
 
-              {/* Teaser for more */}
-              <p className="text-white/25 text-sm text-center mb-6 italic">
-                Your chart reveals {Math.max(insightCount + 3, 7)} more insights waiting to be unlocked…
-              </p>
+              {/* Cliffhanger */}
+              {state.focusArea && (
+                <p className="text-gold/60 text-[0.95rem] text-center mb-6 italic font-light leading-relaxed">
+                  {READING_CLIFFHANGER[state.focusArea].replace('[SIGN]', state.sign)}
+                </p>
+              )}
 
               <button
-                onClick={() => goForward(10)}
+                onClick={() => goForward(11)}
                 className="w-full btn-primary py-4 text-[1rem] cursor-pointer"
               >
                 See what&apos;s included →
