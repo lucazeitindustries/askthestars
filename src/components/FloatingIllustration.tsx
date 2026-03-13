@@ -1,7 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import { motion } from 'framer-motion';
+
+const CDN_BASE = 'https://askthestars-assets.b-cdn.net';
 
 interface FloatingIllustrationProps {
   src: string;
@@ -22,6 +23,11 @@ export default function FloatingIllustration({
   className = '',
   blendMode = 'normal',
 }: FloatingIllustrationProps) {
+  // Convert local path to CDN URL
+  const cdnSrc = src.startsWith('/illustrations/')
+    ? `${CDN_BASE}/${src.replace('/illustrations/', '')}`
+    : src;
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -30,13 +36,14 @@ export default function FloatingIllustration({
       className={`flex justify-center ${className}`}
       style={{ mixBlendMode: blendMode }}
     >
-      <Image
-        src={src}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={cdnSrc}
         alt={alt}
         width={width}
         height={height}
+        loading="lazy"
         style={{ opacity, width: '100%', maxWidth: width, height: 'auto' }}
-        priority={false}
       />
     </motion.div>
   );
