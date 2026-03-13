@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MetaPixel, { trackEvent } from '@/components/MetaPixel';
 import FloatingIllustration from '@/components/FloatingIllustration';
+import PaymentForm from '@/components/PaymentForm';
 
 type FocusArea = 'love' | 'career' | 'growth';
 
@@ -98,6 +99,9 @@ export default function QuizPage() {
   const [direction, setDirection] = useState(1);
   const [utm, setUtm] = useState<UTMParams>({});
   const [showPricing, setShowPricing] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<'star' | 'cosmic' | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
   const splashTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [state, setState] = useState<QuizState>({
     focusArea: null,
@@ -280,28 +284,47 @@ export default function QuizPage() {
     }
   };
 
-  const handleCheckout = async (plan: 'star' | 'cosmic') => {
+  const handleSelectPlan = async (plan: 'star' | 'cosmic') => {
     trackEvent('InitiateCheckout', { content_name: plan, value: plan === 'star' ? 9.99 : 19.99, currency: 'USD' });
-    setState((s) => ({ ...s, loading: true }));
+    setSelectedPlan(plan);
+    setPaymentLoading(true);
+    setClientSecret(null);
+    setState((s) => ({ ...s, error: '' }));
+
     try {
-      const res = await fetch('/api/stripe/checkout', {
+      const res = await fetch('/api/stripe/create-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          plan,
-          email: state.email,
-          successUrl: `${window.location.origin}/quiz/success`,
-        }),
+        body: JSON.stringify({ plan, email: state.email }),
       });
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
+      if (data.clientSecret) {
+        setClientSecret(data.clientSecret);
       } else {
-        setState((s) => ({ ...s, error: data.error || 'Checkout unavailable', loading: false }));
+        setState((s) => ({ ...s, error: data.error || 'Unable to set up payment' }));
+        setSelectedPlan(null);
       }
     } catch {
-      setState((s) => ({ ...s, error: 'Unable to start checkout. Please try again.', loading: false }));
+      setState((s) => ({ ...s, error: 'Unable to start checkout. Please try again.' }));
+      setSelectedPlan(null);
+    } finally {
+      setPaymentLoading(false);
     }
+  };
+
+  const handlePaymentSuccess = () => {
+    trackEvent('Purchase', {
+      content_name: selectedPlan,
+      value: selectedPlan === 'star' ? 9.99 : 19.99,
+      currency: 'USD',
+    });
+    window.location.href = '/quiz/success';
+  };
+
+  const handleChangePlan = () => {
+    setSelectedPlan(null);
+    setClientSecret(null);
+    setState((s) => ({ ...s, error: '' }));
   };
 
   // Count teaser insights (sentences in teaser text)
@@ -907,7 +930,32 @@ export default function QuizPage() {
               </div>
 
               {/* Pricing CTA */}
-              {!showPricing ? (
+              {selectedPlan && clientSecret ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full"
+                >
+                  <PaymentForm
+                    clientSecret={clientSecret}
+                    planName={selectedPlan === 'star' ? 'Star' : 'Cosmic'}
+                    planPrice={selectedPlan === 'star' ? '$9.99/mo' : '$19.99/mo'}
+                    onSuccess={handlePaymentSuccess}
+                    onChangePlan={handleChangePlan}
+                  />
+                </motion.div>
+              ) : selectedPlan && paymentLoading ? (
+                <div className="w-full text-center py-8">
+                  <motion.p
+                    className="text-white/50 text-sm"
+                    animate={{ opacity: [0.4, 0.8, 0.4] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    Setting up your subscription...
+                  </motion.p>
+                </div>
+              ) : !showPricing ? (
                 <button
                   onClick={() => setShowPricing(true)}
                   className="w-full btn-primary py-4 text-[1rem] cursor-pointer"
@@ -934,8 +982,8 @@ export default function QuizPage() {
                       <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Full birth chart analysis</li>
                     </ul>
                     <button
-                      onClick={() => handleCheckout('star')}
-                      disabled={state.loading}
+                      onClick={() => handleSelectPlan('star')}
+                      disabled={paymentLoading}
                       className="w-full btn-primary py-3 cursor-pointer disabled:opacity-50"
                     >
                       Subscribe
@@ -958,8 +1006,8 @@ export default function QuizPage() {
                       <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Monthly cosmic forecast</li>
                     </ul>
                     <button
-                      onClick={() => handleCheckout('cosmic')}
-                      disabled={state.loading}
+                      onClick={() => handleSelectPlan('cosmic')}
+                      disabled={paymentLoading}
                       className="w-full btn-ghost py-3 cursor-pointer disabled:opacity-50"
                     >
                       Subscribe
