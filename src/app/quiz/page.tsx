@@ -1,11 +1,37 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MetaPixel, { trackEvent } from '@/components/MetaPixel';
 import FloatingIllustration from '@/components/FloatingIllustration';
 
 type FocusArea = 'love' | 'career' | 'growth';
+
+type StepType = 'intro' | 'splash' | 'action';
+
+interface StepConfig {
+  type: StepType;
+  id: string;
+}
+
+// 10-step flow: 3 intros, 5 action steps, 2 splash steps
+const STEPS: StepConfig[] = [
+  { type: 'intro', id: 'intro-1' },
+  { type: 'intro', id: 'intro-2' },
+  { type: 'intro', id: 'intro-3' },
+  { type: 'action', id: 'focus' },
+  { type: 'splash', id: 'splash-focus' },
+  { type: 'action', id: 'birthdate' },
+  { type: 'splash', id: 'splash-analyzing' },
+  { type: 'action', id: 'teaser' },
+  { type: 'action', id: 'email' },
+  { type: 'action', id: 'reading' },
+];
+
+// Map action steps to progress dot indices (0-4)
+const ACTION_STEP_INDICES = STEPS
+  .map((s, i) => ({ ...s, index: i }))
+  .filter((s) => s.type === 'action');
 
 interface QuizState {
   focusArea: FocusArea | null;
@@ -58,10 +84,11 @@ const slideVariants = {
 };
 
 export default function QuizPage() {
-  const [step, setStep] = useState(1);
+  const [stepIndex, setStepIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [utm, setUtm] = useState<UTMParams>({});
   const [showPricing, setShowPricing] = useState(false);
+  const splashTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [state, setState] = useState<QuizState>({
     focusArea: null,
     birthMonth: '',
@@ -78,6 +105,18 @@ export default function QuizPage() {
     error: '',
   });
 
+  const currentStep = STEPS[stepIndex];
+
+  // Calculate which action step we're on (for progress dots)
+  const currentActionIndex = (() => {
+    const idx = ACTION_STEP_INDICES.findIndex((s) => s.index >= stepIndex);
+    if (idx === -1) return ACTION_STEP_INDICES.length - 1;
+    // If we're past an action step (on a splash after it), show the previous action as active
+    const match = ACTION_STEP_INDICES[idx];
+    if (match.index === stepIndex) return idx;
+    return Math.max(0, idx - 1);
+  })();
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const utmData: UTMParams = {};
@@ -88,22 +127,47 @@ export default function QuizPage() {
     setUtm(utmData);
   }, []);
 
-  const goForward = useCallback((nextStep: number) => {
+  // Auto-advance for splash steps (except splash-analyzing which waits for API)
+  useEffect(() => {
+    if (currentStep.type === 'splash' && currentStep.id === 'splash-focus') {
+      splashTimerRef.current = setTimeout(() => {
+        goForward(stepIndex + 1);
+      }, 2500);
+      return () => {
+        if (splashTimerRef.current) clearTimeout(splashTimerRef.current);
+      };
+    }
+  }, [stepIndex, currentStep]);
+
+  const goForward = useCallback((nextIndex: number) => {
     setDirection(1);
-    setStep(nextStep);
+    setStepIndex(nextIndex);
   }, []);
 
   const goBack = useCallback(() => {
-    if (step > 1) {
-      setDirection(-1);
-      setStep(step - 1);
+    if (stepIndex <= 0) return;
+
+    setDirection(-1);
+    // Skip splash steps when going back
+    let targetIndex = stepIndex - 1;
+    while (targetIndex > 0 && STEPS[targetIndex].type === 'splash') {
+      targetIndex--;
     }
-  }, [step]);
+    setStepIndex(targetIndex);
+  }, [stepIndex]);
+
+  const skipIntros = useCallback(() => {
+    // Jump to the first action step (focus selection)
+    const firstAction = STEPS.findIndex((s) => s.type === 'action');
+    setDirection(1);
+    setStepIndex(firstAction);
+  }, []);
 
   const handleFocusSelect = (area: FocusArea) => {
     setState((s) => ({ ...s, focusArea: area }));
     trackEvent('ViewContent', { content_name: area });
-    goForward(2);
+    // Go to splash-focus step
+    goForward(4);
   };
 
   const handleBirthSubmit = async () => {
@@ -122,7 +186,8 @@ export default function QuizPage() {
 
     setState((s) => ({ ...s, error: '', loading: true }));
     trackEvent('Lead');
-    goForward(3);
+    // Go to splash-analyzing step
+    goForward(6);
 
     const dateStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     try {
@@ -156,6 +221,8 @@ export default function QuizPage() {
         fullReading: reading.fullReading || '',
         loading: false,
       }));
+      // Auto-advance to teaser step
+      goForward(7);
     } catch {
       setState((s) => ({
         ...s,
@@ -165,6 +232,7 @@ export default function QuizPage() {
         fullReading: 'The current planetary transits are creating powerful shifts in your chart...',
         loading: false,
       }));
+      goForward(7);
     }
   };
 
@@ -196,7 +264,7 @@ export default function QuizPage() {
       }
       trackEvent('CompleteRegistration');
       setState((s) => ({ ...s, loading: false }));
-      goForward(5);
+      goForward(9);
     } catch {
       setState((s) => ({ ...s, error: 'Something went wrong. Please try again.', loading: false }));
     }
@@ -229,6 +297,13 @@ export default function QuizPage() {
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
   const years = Array.from({ length: 93 }, (_, i) => 2012 - i);
 
+  // Count teaser insights (sentences in teaser text)
+  const insightCount = state.teaser ? state.teaser.split(/[.!?]+/).filter(Boolean).length : 0;
+
+  const showProgressDots = currentStep.type === 'action';
+  const showSkipButton = currentStep.type === 'intro';
+  const showBackButton = stepIndex > 0 && currentStep.type !== 'splash';
+
   return (
     <div className="min-h-dvh flex flex-col items-center bg-black overflow-hidden">
       <MetaPixel />
@@ -238,26 +313,38 @@ export default function QuizPage() {
         <span className="text-white/30 text-[10px] tracking-[0.2em] uppercase font-heading">askthestars.ai</span>
       </div>
 
-      {/* Progress dots */}
-      <div className="flex gap-2 py-3 z-10">
-        {[1, 2, 3, 4, 5].map((s) => (
+      {/* Progress dots — only for action steps */}
+      <div className="flex gap-2 py-3 z-10" style={{ opacity: showProgressDots ? 1 : 0, transition: 'opacity 0.3s' }}>
+        {ACTION_STEP_INDICES.map((_, i) => (
           <div
-            key={s}
+            key={i}
             className="h-1 rounded-full transition-all duration-500"
             style={{
-              width: s === step ? 20 : 6,
-              background: s <= step ? 'var(--gold)' : 'rgba(255,255,255,0.1)',
+              width: i === currentActionIndex ? 20 : 6,
+              background: i <= currentActionIndex ? 'var(--gold)' : 'rgba(255,255,255,0.1)',
             }}
           />
         ))}
       </div>
 
+      {/* Skip button for intro steps */}
+      {showSkipButton && (
+        <button
+          onClick={skipIntros}
+          className="fixed top-4 right-4 z-20 text-white/30 text-sm cursor-pointer hover:text-white/50 transition-colors"
+        >
+          Skip
+        </button>
+      )}
+
       {/* Step container */}
       <div className="flex-1 w-full max-w-[480px] px-5 relative">
         <AnimatePresence mode="wait" custom={direction}>
-          {step === 1 && (
+
+          {/* ===== INTRO 1: Your stars. Decoded by AI. ===== */}
+          {currentStep.id === 'intro-1' && (
             <motion.div
-              key="step1"
+              key="intro-1"
               custom={direction}
               variants={slideVariants}
               initial="enter"
@@ -266,6 +353,187 @@ export default function QuizPage() {
               transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.6 }}
+                className="text-center"
+              >
+                <FloatingIllustration
+                  src="/illustrations/hero-eclipse.png"
+                  alt="Celestial eclipse"
+                  width={140}
+                  height={140}
+                  opacity={0.6}
+                  className="mb-8"
+                />
+                <h1 className="text-[clamp(2rem,6vw,2.75rem)] font-heading font-light leading-[1.15] mb-6 text-white/90">
+                  Your stars.<br />Decoded by AI.
+                </h1>
+                <p className="text-white/50 text-[0.95rem] leading-relaxed max-w-[340px] mx-auto font-light">
+                  We combine real-time planetary data with advanced AI to give you the most accurate, personalized astrology readings available.
+                </p>
+                <p className="text-white/35 text-sm mt-4 italic">
+                  Not generic horoscopes — readings based on YOUR exact birth chart.
+                </p>
+              </motion.div>
+
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.4 }}
+                onClick={() => goForward(1)}
+                className="mt-12 btn-ghost px-10 py-3 text-[0.95rem] cursor-pointer"
+              >
+                Next
+              </motion.button>
+            </motion.div>
+          )}
+
+          {/* ===== INTRO 2: What you'll get ===== */}
+          {currentStep.id === 'intro-2' && (
+            <motion.div
+              key="intro-2"
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
+            >
+              {showBackButton && (
+                <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.6 }}
+                className="text-center"
+              >
+                <FloatingIllustration
+                  src="/illustrations/moon-phases.png"
+                  alt="Moon phases"
+                  width={200}
+                  height={70}
+                  opacity={0.5}
+                  className="mb-8"
+                />
+                <h1 className="text-[clamp(1.75rem,5vw,2.5rem)] font-heading font-light leading-[1.15] mb-8 text-white/90">
+                  What you&apos;ll get:
+                </h1>
+                <div className="text-left space-y-4 max-w-[320px] mx-auto">
+                  {[
+                    'Personalized daily readings based on your chart',
+                    'AI that actually understands planetary transits',
+                    'Compatibility analysis with real astrological data',
+                    'A personal astrologer available 24/7',
+                  ].map((item, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 + i * 0.12, duration: 0.4 }}
+                      className="flex items-start gap-3"
+                    >
+                      <span className="text-gold/70 text-sm mt-0.5 shrink-0">✦</span>
+                      <span className="text-white/55 text-[0.95rem] font-light leading-relaxed">{item}</span>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8, duration: 0.4 }}
+                onClick={() => goForward(2)}
+                className="mt-12 btn-ghost px-10 py-3 text-[0.95rem] cursor-pointer"
+              >
+                Next
+              </motion.button>
+            </motion.div>
+          )}
+
+          {/* ===== INTRO 3: Ready in 60 seconds ===== */}
+          {currentStep.id === 'intro-3' && (
+            <motion.div
+              key="intro-3"
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
+            >
+              {showBackButton && (
+                <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.6 }}
+                className="text-center"
+              >
+                <FloatingIllustration
+                  src="/illustrations/stella-chat-illustration.png"
+                  alt="Cosmic eye"
+                  width={120}
+                  height={120}
+                  opacity={0.5}
+                  className="mb-8"
+                />
+                <h1 className="text-[clamp(2rem,6vw,2.75rem)] font-heading font-light leading-[1.15] mb-4 text-white/90">
+                  Ready in 60 seconds.
+                </h1>
+                <p className="text-white/45 text-[0.95rem] font-light max-w-[300px] mx-auto leading-relaxed">
+                  Answer two quick questions and we&apos;ll decode your cosmic blueprint.
+                </p>
+              </motion.div>
+
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.4 }}
+                onClick={() => goForward(3)}
+                className="mt-12 btn-primary px-10 py-3.5 text-[0.95rem] cursor-pointer"
+              >
+                Let&apos;s go
+              </motion.button>
+            </motion.div>
+          )}
+
+          {/* ===== STEP 4: Focus Selection ===== */}
+          {currentStep.id === 'focus' && (
+            <motion.div
+              key="focus"
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
+            >
+              {showBackButton && (
+                <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
+
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -312,9 +580,10 @@ export default function QuizPage() {
             </motion.div>
           )}
 
-          {step === 2 && (
+          {/* ===== SPLASH: Great choice ===== */}
+          {currentStep.id === 'splash-focus' && (
             <motion.div
-              key="step2"
+              key="splash-focus"
               custom={direction}
               variants={slideVariants}
               initial="enter"
@@ -323,11 +592,46 @@ export default function QuizPage() {
               transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
-              <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
-                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+                className="text-center"
+              >
+                <h1 className="text-[clamp(2rem,6vw,2.75rem)] font-heading font-light leading-[1.2] text-white/90 mb-3">
+                  Great choice. <span className="text-gold">✦</span>
+                </h1>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 0.5 }}
+                  className="text-white/40 text-[0.95rem] font-light"
+                >
+                  Now let&apos;s find your stars.
+                </motion.p>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* ===== STEP 6: Birth Date ===== */}
+          {currentStep.id === 'birthdate' && (
+            <motion.div
+              key="birthdate"
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
+            >
+              {showBackButton && (
+                <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
 
               <motion.div
                 initial={{ opacity: 0 }}
@@ -428,9 +732,10 @@ export default function QuizPage() {
             </motion.div>
           )}
 
-          {step === 3 && (
+          {/* ===== SPLASH: Analyzing cosmic blueprint ===== */}
+          {currentStep.id === 'splash-analyzing' && (
             <motion.div
-              key="step3"
+              key="splash-analyzing"
               custom={direction}
               variants={slideVariants}
               initial="enter"
@@ -439,77 +744,14 @@ export default function QuizPage() {
               transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
-              <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
-                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-
-              {state.loading ? (
-                <LoadingAnimation />
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.8 }}
-                  className="w-full"
-                >
-                  <div className="text-center mb-8">
-                    <FloatingIllustration
-                      src={`/illustrations/zodiac-${state.sign.toLowerCase()}.png`}
-                      alt={`${state.sign} zodiac illustration`}
-                      width={140}
-                      height={140}
-                      opacity={0.6}
-                      className="mb-4"
-                    />
-                    <h2 className="text-[clamp(1.5rem,4vw,2rem)] font-heading font-light text-white/90">
-                      Your stars have spoken
-                    </h2>
-                    <p className="text-white/30 text-sm mt-1">
-                      {state.sign} · {state.element} Sign
-                    </p>
-                  </div>
-
-                  {/* Teaser reading */}
-                  <div className="glass-card p-6 mb-4">
-                    <p className="text-white/70 leading-relaxed text-[0.95rem] font-light">
-                      {state.teaser}
-                    </p>
-                  </div>
-
-                  {/* Blurred preview */}
-                  <div className="relative glass-card p-6 mb-8">
-                    <p className="text-white/70 leading-relaxed text-[0.95rem] blur-[6px] select-none" aria-hidden>
-                      The coming weeks bring extraordinary planetary alignments that directly impact your path.
-                      A rare conjunction between Venus and Jupiter in your fifth house creates an opening for
-                      profound connection and creative breakthrough. Meanwhile, Saturn&apos;s transit through your
-                      tenth house suggests that career ambitions...
-                    </p>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="border border-white/10 px-4 py-2 flex items-center gap-2 bg-black/50">
-                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.5)">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                        <span className="text-white/50 text-sm">Full reading locked</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => goForward(4)}
-                    className="w-full btn-primary py-4 text-[1rem] cursor-pointer"
-                  >
-                    Unlock Your Full Reading
-                  </button>
-                </motion.div>
-              )}
+              <LoadingAnimation />
             </motion.div>
           )}
 
-          {step === 4 && (
+          {/* ===== STEP 8: Teaser Reading ===== */}
+          {currentStep.id === 'teaser' && (
             <motion.div
-              key="step4"
+              key="teaser"
               custom={direction}
               variants={slideVariants}
               initial="enter"
@@ -518,11 +760,96 @@ export default function QuizPage() {
               transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
               className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
             >
-              <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
-                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
+              {showBackButton && (
+                <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8 }}
+                className="w-full"
+              >
+                <div className="text-center mb-8">
+                  <FloatingIllustration
+                    src={`/illustrations/zodiac-${state.sign.toLowerCase()}.png`}
+                    alt={`${state.sign} zodiac illustration`}
+                    width={140}
+                    height={140}
+                    opacity={0.6}
+                    className="mb-4"
+                  />
+                  <h2 className="text-[clamp(1.5rem,4vw,2rem)] font-heading font-light text-white/90">
+                    Your stars have spoken
+                  </h2>
+                  <p className="text-white/30 text-sm mt-1">
+                    {state.sign} · {state.element} Sign
+                  </p>
+                  {insightCount > 0 && (
+                    <p className="text-gold/50 text-xs mt-2">
+                      Stella, your AI astrologer, found {insightCount} insights in your chart
+                    </p>
+                  )}
+                </div>
+
+                {/* Teaser reading */}
+                <div className="glass-card p-6 mb-4">
+                  <p className="text-white/70 leading-relaxed text-[0.95rem] font-light">
+                    {state.teaser}
+                  </p>
+                </div>
+
+                {/* Blurred preview */}
+                <div className="relative glass-card p-6 mb-8">
+                  <p className="text-white/70 leading-relaxed text-[0.95rem] blur-[6px] select-none" aria-hidden>
+                    The coming weeks bring extraordinary planetary alignments that directly impact your path.
+                    A rare conjunction between Venus and Jupiter in your fifth house creates an opening for
+                    profound connection and creative breakthrough. Meanwhile, Saturn&apos;s transit through your
+                    tenth house suggests that career ambitions...
+                  </p>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="border border-white/10 px-4 py-2 flex items-center gap-2 bg-black/50">
+                      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,0.5)">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      <span className="text-white/50 text-sm">Full reading locked</span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => goForward(8)}
+                  className="w-full btn-primary py-4 text-[1rem] cursor-pointer"
+                >
+                  Unlock Your Full Reading
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* ===== STEP 9: Email Capture ===== */}
+          {currentStep.id === 'email' && (
+            <motion.div
+              key="email"
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              className="flex flex-col items-center justify-center min-h-[calc(100dvh-100px)]"
+            >
+              {showBackButton && (
+                <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
 
               <motion.div
                 initial={{ opacity: 0 }}
@@ -542,6 +869,9 @@ export default function QuizPage() {
                   Where should we send your daily readings?
                 </h1>
                 <p className="text-white/30 text-sm">Plus a personalized daily horoscope every morning</p>
+                <p className="text-white/20 text-xs mt-2">
+                  Join 10,000+ people who start their day with the stars
+                </p>
               </motion.div>
 
               <motion.div
@@ -579,9 +909,10 @@ export default function QuizPage() {
             </motion.div>
           )}
 
-          {step === 5 && (
+          {/* ===== STEP 10: Full Reading + Upsell ===== */}
+          {currentStep.id === 'reading' && (
             <motion.div
-              key="step5"
+              key="reading"
               custom={direction}
               variants={slideVariants}
               initial="enter"
@@ -590,11 +921,13 @@ export default function QuizPage() {
               transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
               className="flex flex-col items-center py-8 min-h-[calc(100dvh-100px)]"
             >
-              <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
-                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
+              {showBackButton && (
+                <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer">
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
 
               <motion.div
                 initial={{ opacity: 0 }}
@@ -736,7 +1069,7 @@ export default function QuizPage() {
   );
 }
 
-/* ======= Loading Animation (Step 3) ======= */
+/* ======= Loading Animation (Splash - Analyzing) ======= */
 function LoadingAnimation() {
   const [dots, setDots] = useState<{ x: number; y: number; delay: number }[]>([]);
 
@@ -797,11 +1130,11 @@ function LoadingAnimation() {
         />
       </div>
       <motion.p
-        className="text-white/40 text-sm font-light"
+        className="text-white/50 text-[1.1rem] font-heading font-light"
         animate={{ opacity: [0.3, 0.7, 0.3] }}
         transition={{ duration: 2, repeat: Infinity }}
       >
-        Your stars are aligning...
+        Analyzing your cosmic blueprint...
       </motion.p>
     </motion.div>
   );
