@@ -33,18 +33,20 @@ interface StepConfig {
   id: string;
 }
 
-// 10-step flow: 3 intros, 5 action steps, 2 splash steps
+// 12-step flow: 3 intros, 7 action steps, 2 splash steps
 const STEPS: StepConfig[] = [
-  { type: 'intro', id: 'intro-1' },
-  { type: 'intro', id: 'intro-2' },
-  { type: 'intro', id: 'intro-3' },
-  { type: 'action', id: 'focus' },
-  { type: 'splash', id: 'splash-focus' },
-  { type: 'action', id: 'birthdate' },
-  { type: 'splash', id: 'splash-analyzing' },
-  { type: 'action', id: 'teaser' },
-  { type: 'action', id: 'email' },
-  { type: 'action', id: 'reading' },
+  { type: 'intro', id: 'intro-1' },      // 0
+  { type: 'intro', id: 'intro-2' },      // 1
+  { type: 'intro', id: 'intro-3' },      // 2
+  { type: 'action', id: 'focus' },       // 3
+  { type: 'splash', id: 'splash-focus' },// 4
+  { type: 'action', id: 'birthdate' },   // 5
+  { type: 'splash', id: 'splash-analyzing' }, // 6
+  { type: 'action', id: 'teaser' },      // 7
+  { type: 'action', id: 'email' },       // 8
+  { type: 'action', id: 'reading' },     // 9
+  { type: 'action', id: 'offer' },       // 10
+  { type: 'action', id: 'payment' },     // 11
 ];
 
 // Map action steps to progress dot indices (0-4)
@@ -116,7 +118,6 @@ export default function QuizPage() {
   const [stepIndex, setStepIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [utm, setUtm] = useState<UTMParams>({});
-  const [showPricing, setShowPricing] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'star' | 'cosmic' | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -309,6 +310,9 @@ export default function QuizPage() {
     setClientSecret(null);
     setState((s) => ({ ...s, error: '' }));
 
+    // Advance to payment step immediately (shows loading state)
+    goForward(11);
+
     try {
       const res = await fetch('/api/stripe/create-subscription', {
         method: 'POST',
@@ -321,10 +325,13 @@ export default function QuizPage() {
       } else {
         setState((s) => ({ ...s, error: data.error || 'Unable to set up payment' }));
         setSelectedPlan(null);
+        // Go back to offer page on error
+        goForward(10);
       }
     } catch {
       setState((s) => ({ ...s, error: 'Unable to start checkout. Please try again.' }));
       setSelectedPlan(null);
+      goForward(10);
     } finally {
       setPaymentLoading(false);
     }
@@ -343,6 +350,9 @@ export default function QuizPage() {
     setSelectedPlan(null);
     setClientSecret(null);
     setState((s) => ({ ...s, error: '' }));
+    // Go back to offer page
+    setDirection(-1);
+    setStepIndex(10);
   };
 
   // Count teaser insights (sentences in teaser text)
@@ -891,7 +901,7 @@ export default function QuizPage() {
             </motion.div>
           )}
 
-          {/* ===== STEP 10: Full Reading + Upsell ===== */}
+          {/* ===== STEP 10: Full Reading (simplified) ===== */}
           {currentStep.id === 'reading' && (
             <motion.div
               key="reading"
@@ -934,117 +944,223 @@ export default function QuizPage() {
                 ))}
               </div>
 
-              {/* Locked sections */}
-              <div className="w-full space-y-2 mb-6">
-                <p className="text-white/30 text-sm text-center mb-3">Unlock your complete cosmic profile:</p>
-                {[
-                  'Detailed Love Forecast',
-                  'Career Opportunities This Month',
-                  'Your Hidden Strengths',
-                  'Compatibility with Every Sign',
-                  'Unlimited AI Chat with Stella',
-                ].map((item, i) => (
-                  <div key={i} className="py-3 px-4 flex items-center gap-3 border border-white/5 opacity-60">
-                    <span className="text-white/20">🔒</span>
-                    <span className="text-white/40 text-sm">{item}</span>
-                  </div>
-                ))}
-              </div>
+              {/* Teaser for more */}
+              <p className="text-white/25 text-sm text-center mb-6 italic">
+                Your chart reveals {Math.max(insightCount + 3, 7)} more insights waiting to be unlocked…
+              </p>
 
-              {/* Pricing CTA */}
-              {selectedPlan && clientSecret ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="w-full"
-                >
-                  <PaymentForm
-                    clientSecret={clientSecret}
-                    planName={selectedPlan === 'star' ? 'Star' : 'Cosmic'}
-                    planPrice={selectedPlan === 'star' ? '$9.99/mo' : '$19.99/mo'}
-                    onSuccess={handlePaymentSuccess}
-                    onChangePlan={handleChangePlan}
-                  />
-                </motion.div>
-              ) : selectedPlan && paymentLoading ? (
-                <div className="w-full text-center py-8">
-                  <motion.p
-                    className="text-white/50 text-sm"
-                    animate={{ opacity: [0.4, 0.8, 0.4] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
-                    Setting up your subscription...
-                  </motion.p>
-                </div>
-              ) : !showPricing ? (
-                <button
-                  onClick={() => setShowPricing(true)}
-                  className="w-full btn-primary py-4 text-[1rem] cursor-pointer"
-                >
-                  Unlock Everything
+              <button
+                onClick={() => goForward(10)}
+                className="w-full btn-primary py-4 text-[1rem] cursor-pointer"
+              >
+                See what&apos;s included →
+              </button>
+              <div className="h-8" />
+            </motion.div>
+          )}
+
+          {/* ===== STEP 11: Offer Page ===== */}
+          {currentStep.id === 'offer' && (
+            <motion.div
+              key="offer"
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={slideTransition}
+              className="flex flex-col items-center py-8 min-h-[calc(100dvh-100px)] overflow-y-auto"
+            >
+              {showBackButton && (
+                <button onClick={goBack} className="absolute top-4 left-0 text-white/30 hover:text-white/60 p-2 transition-colors cursor-pointer z-10">
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+                  </svg>
                 </button>
-              ) : (
-                <div className="w-full space-y-3">
-                  {/* Star plan */}
-                  <div className="p-5 relative border border-white/15 hover:border-gold/30 transition-all">
-                    <p className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-gold text-[9px] uppercase tracking-[0.15em] bg-black px-2">
-                      Most Popular
-                    </p>
-                    <div className="flex items-baseline justify-between mb-3">
-                      <span className="text-white/80 text-base font-heading">Star</span>
-                      <div>
-                        <span className="text-white/90 text-xl font-heading font-light">$9.99</span>
-                        <span className="text-white/30 text-sm">/mo</span>
-                      </div>
+              )}
+
+              <div className="w-full">
+                {/* Hook headline */}
+                <div className="text-center mb-10">
+                  <h1 className="text-[clamp(1.75rem,5vw,2.5rem)] font-heading font-light leading-[1.15] mb-3 text-white/90">
+                    Unlock your complete<br />cosmic profile
+                  </h1>
+                  <p className="text-white/40 text-[0.95rem] font-light">
+                    Everything the stars reveal about your path — updated daily.
+                  </p>
+                </div>
+
+                {/* Benefits list */}
+                <div className="space-y-3.5 mb-8">
+                  {[
+                    'Personalized daily readings based on YOUR exact birth chart',
+                    'Weekly & monthly forecasts with transit analysis',
+                    'Unlimited conversations with Stella, your AI astrologer',
+                    'Detailed compatibility reports for any relationship',
+                    'Career, love & personal growth guidance',
+                    'Birth chart analysis with all planetary positions',
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <span className="text-gold/70 text-sm mt-0.5 shrink-0">✦</span>
+                      <span className="text-white/55 text-[0.95rem] font-light leading-relaxed">{item}</span>
                     </div>
-                    <ul className="text-white/40 text-sm space-y-1.5 mb-4">
-                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Unlimited AI chat with Stella</li>
-                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Personalized daily readings</li>
-                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Full birth chart analysis</li>
+                  ))}
+                </div>
+
+                {/* Social proof */}
+                <p className="text-white/[0.4] text-sm text-center mb-10">
+                  Trusted by thousands of stargazers worldwide
+                </p>
+
+                {/* Pricing cards */}
+                <div className="space-y-4 mb-6">
+                  {/* Star Plan */}
+                  <div className="p-6 border border-white/10 hover:border-white/20 transition-all">
+                    <div className="text-center mb-4">
+                      <p className="text-white/80 text-base font-heading mb-2">Star Plan</p>
+                      <p className="text-white/90 text-3xl font-heading font-light">
+                        $9.99<span className="text-white/30 text-base">/month</span>
+                      </p>
+                      <p className="text-gold text-sm mt-1.5">That&apos;s just $0.33/day</p>
+                      <p className="text-white/[0.3] text-xs mt-1">Less than your morning coffee ☕</p>
+                    </div>
+                    <ul className="text-white/40 text-sm space-y-1.5 mb-5">
+                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Unlimited AI chat</li>
+                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Daily readings</li>
+                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Full birth chart</li>
                     </ul>
                     <button
                       onClick={() => handleSelectPlan('star')}
                       disabled={paymentLoading}
-                      className="w-full btn-primary py-3 cursor-pointer disabled:opacity-50"
+                      className="w-full btn-ghost py-3 cursor-pointer disabled:opacity-50"
                     >
-                      Subscribe
+                      Choose Star
                     </button>
                   </div>
 
-                  {/* Cosmic plan */}
-                  <div className="p-5 border border-white/[0.08] hover:border-white/15 transition-all">
-                    <div className="flex items-baseline justify-between mb-3">
-                      <span className="text-white/80 text-base font-heading">Cosmic</span>
-                      <div>
-                        <span className="text-white/90 text-xl font-heading font-light">$19.99</span>
-                        <span className="text-white/30 text-sm">/mo</span>
-                      </div>
+                  {/* Cosmic Plan */}
+                  <div className="p-6 border border-gold/20 hover:border-gold/35 transition-all relative">
+                    <p className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-gold text-[9px] uppercase tracking-[0.15em] bg-black px-3 font-heading">
+                      Most Popular
+                    </p>
+                    <div className="text-center mb-4">
+                      <p className="text-white/80 text-base font-heading mb-2">Cosmic Plan</p>
+                      <p className="text-white/90 text-3xl font-heading font-light">
+                        $19.99<span className="text-white/30 text-base">/month</span>
+                      </p>
+                      <p className="text-gold text-sm mt-1.5">That&apos;s just $0.66/day</p>
+                      <p className="text-white/[0.3] text-xs mt-1">For complete cosmic guidance</p>
                     </div>
-                    <ul className="text-white/40 text-sm space-y-1.5 mb-4">
+                    <ul className="text-white/40 text-sm space-y-1.5 mb-5">
                       <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Everything in Star</li>
-                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Relationship & compatibility readings</li>
-                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Career guidance & forecasts</li>
-                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Monthly cosmic forecast</li>
+                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Relationship readings</li>
+                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Career guidance</li>
+                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Monthly forecast</li>
+                      <li className="flex items-center gap-2"><span className="text-white/20">✓</span> Priority access</li>
                     </ul>
                     <button
                       onClick={() => handleSelectPlan('cosmic')}
                       disabled={paymentLoading}
-                      className="w-full btn-ghost py-3 cursor-pointer disabled:opacity-50"
+                      className="w-full py-3 cursor-pointer disabled:opacity-50 border border-gold/40 text-gold hover:bg-gold/10 transition-colors text-sm tracking-wide"
                     >
-                      Subscribe
+                      Choose Cosmic
                     </button>
                   </div>
-
-                  {state.error && (
-                    <p className="text-red-400/80 text-sm text-center">{state.error}</p>
-                  )}
                 </div>
-              )}
 
-              <p className="text-white/20 text-xs text-center mt-4">
-                Cancel anytime. Secure payment via Stripe.
-              </p>
+                {state.error && (
+                  <p className="text-red-400/80 text-sm text-center mb-4">{state.error}</p>
+                )}
+
+                {/* Free option */}
+                <p className="text-center mb-6">
+                  <a href="/" className="text-white/[0.3] text-sm hover:text-white/50 transition-colors underline underline-offset-2">
+                    Continue with free plan (3 questions/day)
+                  </a>
+                </p>
+
+                {/* Guarantee */}
+                <p className="text-white/[0.25] text-xs text-center mb-8">
+                  Cancel anytime. No commitment. Your first reading is waiting.
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ===== STEP 12: Payment Form ===== */}
+          {currentStep.id === 'payment' && (
+            <motion.div
+              key="payment"
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={slideTransition}
+              className="flex flex-col items-center py-8 min-h-[calc(100dvh-100px)]"
+            >
+              <div className="w-full">
+                {/* Plan summary */}
+                <div className="text-center mb-8">
+                  <h2 className="text-[clamp(1.25rem,4vw,1.75rem)] font-heading font-light text-white/90 mb-2">
+                    Complete your subscription
+                  </h2>
+                  <p className="text-white/50 text-base font-heading">
+                    {selectedPlan === 'cosmic' ? 'Cosmic' : 'Star'} Plan — {selectedPlan === 'cosmic' ? '$19.99/mo' : '$9.99/mo'}
+                    <span className="text-gold text-sm ml-2">
+                      ({selectedPlan === 'cosmic' ? '$0.66' : '$0.33'}/day)
+                    </span>
+                  </p>
+                  <button
+                    onClick={handleChangePlan}
+                    className="text-white/30 text-sm mt-2 hover:text-white/50 transition-colors underline underline-offset-2 cursor-pointer"
+                  >
+                    Change plan
+                  </button>
+                </div>
+
+                {/* Payment form */}
+                {clientSecret ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full"
+                  >
+                    <PaymentForm
+                      clientSecret={clientSecret}
+                      planName={selectedPlan === 'star' ? 'Star' : 'Cosmic'}
+                      planPrice={selectedPlan === 'star' ? '$9.99/mo' : '$19.99/mo'}
+                      onSuccess={handlePaymentSuccess}
+                      onChangePlan={handleChangePlan}
+                    />
+                  </motion.div>
+                ) : paymentLoading ? (
+                  <div className="w-full text-center py-8">
+                    <motion.p
+                      className="text-white/50 text-sm"
+                      animate={{ opacity: [0.4, 0.8, 0.4] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      Setting up your cosmic subscription...
+                    </motion.p>
+                  </div>
+                ) : (
+                  <div className="w-full text-center py-8">
+                    <p className="text-white/40 text-sm mb-4">Something went wrong loading payment.</p>
+                    <button
+                      onClick={handleChangePlan}
+                      className="btn-ghost px-6 py-2 cursor-pointer text-sm"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                )}
+
+                <p className="text-white/20 text-xs text-center mt-6">
+                  Cancel anytime. Secure payment via Stripe.
+                </p>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
